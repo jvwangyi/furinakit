@@ -57,6 +57,6 @@ test.describe('Tool Page', () => {
     await homeLink.click();
     
     // Should be back on homepage
-    await expect(page).toHaveURL(/\/);
+    await expect(page).toHaveURL(/\/$|\/index/);
   });
 });

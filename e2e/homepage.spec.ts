@@ -7,7 +7,7 @@ test.describe('Homepage', () => {
 
   test('should load homepage successfully', async ({ page }) => {
     // Check page title
-    await expect(page).toHaveTitle(/);
+    await expect(page).toHaveTitle(/FurinaKit/);
     
     // Check hero section is visible - use main content area to avoid sidebar duplicate
     const hero = page.locator('main h1:has-text("FurinaKit")');
