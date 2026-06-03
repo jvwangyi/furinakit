@@ -4,7 +4,7 @@ test.describe('Navigation', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/furinakit/');
+    await page.goto('/');
   });
 
   test('should display sidebar navigation', async ({ page }) => {
@@ -20,19 +20,19 @@ test.describe('Navigation', () => {
 
   test('should navigate to category pages', async ({ page }) => {
     // Click on PDF category
-    const pdfLink = page.locator('a[href="/furinakit/pdf"]').first();
+    const pdfLink = page.locator('a[href="/pdf"]').first();
     await pdfLink.click();
-    
+
     // Should navigate to PDF page
-    await expect(page).toHaveURL(/\/furinakit\/pdf/);
+    await expect(page).toHaveURL(/\/pdf/);
   });
 
   test('should highlight active category', async ({ page }) => {
     // Navigate to PDF page
-    await page.goto('/furinakit/pdf');
+    await page.goto('/pdf');
     
     // Check that PDF link has active style
-    const pdfLink = page.locator('a[href="/furinakit/pdf"]').first();
+    const pdfLink = page.locator('a[href="/pdf"]').first();
     const className = await pdfLink.getAttribute('class');
     expect(className).toContain('bg-sidebar-accent');
   });
@@ -95,7 +95,7 @@ test.describe('Navigation', () => {
   });
 
   test('should navigate using sidebar links', async ({ page }) => {
-    const categories = ['/furinakit/pdf', '/furinakit/image', '/furinakit/text', '/furinakit/video', '/furinakit/dev', '/furinakit/file', '/furinakit/craft'];
+    const categories = ['/pdf', '/image', '/text', '/video', '/dev', '/file', '/craft'];
     
     for (const category of categories) {
       const link = page.locator(`a[href="${category}"]`).first();
@@ -104,7 +104,7 @@ test.describe('Navigation', () => {
         await expect(page).toHaveURL(new RegExp(category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
         
         // Go back to home for next iteration
-        await page.goto('/furinakit/');
+        await page.goto('/');
       }
     }
   });

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Tool Page', () => {
   test('should navigate to a text tool page', async ({ page }) => {
     // Navigate to a text tool (e.g., text-case)
-    await page.goto('/furinakit/text/text-case');
+    await page.goto('/text/text-case');
     
     // Check page loaded
     await expect(page.locator('h1, h2, [class*="card-title"]').first()).toBeVisible();
@@ -14,7 +14,7 @@ test.describe('Tool Page', () => {
   });
 
   test('should display tool options', async ({ page }) => {
-    await page.goto('/furinakit/text/text-case');
+    await page.goto('/text/text-case');
     
     // Wait for page to load
     await page.waitForLoadState('networkidle');
@@ -27,7 +27,7 @@ test.describe('Tool Page', () => {
 
   test('should display file upload area for file tools', async ({ page }) => {
     // Navigate to a file tool (e.g., pdf-merge)
-    await page.goto('/furinakit/pdf/pdf-merge');
+    await page.goto('/pdf/pdf-merge');
     
     // Wait for page to load
     await page.waitForLoadState('networkidle');
@@ -38,7 +38,7 @@ test.describe('Tool Page', () => {
   });
 
   test('should display execute button', async ({ page }) => {
-    await page.goto('/furinakit/text/text-case');
+    await page.goto('/text/text-case');
     
     // Wait for page to load
     await page.waitForLoadState('networkidle');
@@ -49,7 +49,7 @@ test.describe('Tool Page', () => {
   });
 
   test('should navigate back to home from tool page', async ({ page }) => {
-    await page.goto('/furinakit/text/text-case');
+    await page.goto('/text/text-case');
     
     // Click on FurinaKit logo or home link - use the sidebar link
     const sidebar = page.locator('aside').first();
@@ -57,6 +57,6 @@ test.describe('Tool Page', () => {
     await homeLink.click();
     
     // Should be back on homepage
-    await expect(page).toHaveURL(/\/furinakit/);
+    await expect(page).toHaveURL(/\/);
   });
 });

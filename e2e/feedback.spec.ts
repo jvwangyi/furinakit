@@ -4,7 +4,7 @@ test.describe('Feedback System', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test('should display feedback form after tool execution', async ({ page }) => {
-    await page.goto('/furinakit/text/json-format');
+    await page.goto('/text/json-format');
     await page.waitForLoadState('networkidle');
 
     // Input text and execute
@@ -24,7 +24,7 @@ test.describe('Feedback System', () => {
   });
 
   test('should show comment field after selecting rating', async ({ page }) => {
-    await page.goto('/furinakit/text/json-format');
+    await page.goto('/text/json-format');
     await page.waitForLoadState('networkidle');
 
     // Execute a tool first
@@ -55,7 +55,7 @@ test.describe('Feedback System', () => {
   });
 
   test('should submit feedback successfully', async ({ page }) => {
-    await page.goto('/furinakit/text/json-format');
+    await page.goto('/text/json-format');
     await page.waitForLoadState('networkidle');
 
     // Execute a tool

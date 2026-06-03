@@ -4,7 +4,7 @@ test.describe('Audio Tools', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test('audio-convert should load page', async ({ page }) => {
-    await page.goto('/furinakit/audio/audio-convert');
+    await page.goto('/audio/audio-convert');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page
@@ -13,7 +13,7 @@ test.describe('Audio Tools', () => {
   });
 
   test('audio-trim should load page', async ({ page }) => {
-    await page.goto('/furinakit/audio/audio-trim');
+    await page.goto('/audio/audio-trim');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page
@@ -26,7 +26,7 @@ test.describe('Video Tools', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test('video-compress should load page', async ({ page }) => {
-    await page.goto('/furinakit/video/video-compress');
+    await page.goto('/video/video-compress');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page
@@ -35,7 +35,7 @@ test.describe('Video Tools', () => {
   });
 
   test('video-to-audio should load page', async ({ page }) => {
-    await page.goto('/furinakit/video/video-to-audio');
+    await page.goto('/video/video-to-audio');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page
@@ -44,7 +44,7 @@ test.describe('Video Tools', () => {
   });
 
   test('video-trim should load page', async ({ page }) => {
-    await page.goto('/furinakit/video/video-trim');
+    await page.goto('/video/video-trim');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page

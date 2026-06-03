@@ -2,12 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Homepage', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/furinakit/');
+    await page.goto('/');
   });
 
   test('should load homepage successfully', async ({ page }) => {
     // Check page title
-    await expect(page).toHaveTitle(/FurinaKit/);
+    await expect(page).toHaveTitle(/);
     
     // Check hero section is visible - use main content area to avoid sidebar duplicate
     const hero = page.locator('main h1:has-text("FurinaKit")');
@@ -19,7 +19,7 @@ test.describe('Homepage', () => {
     await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
     
     // Check tool cards are displayed
-    const toolCards = page.locator('a[href*="/furinakit/"]');
+    const toolCards = page.locator('a[href*="/"]');
     const count = await toolCards.count();
     expect(count).toBeGreaterThan(0);
   });
@@ -29,7 +29,7 @@ test.describe('Homepage', () => {
     await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
     
     // Get initial tool count
-    const initialCards = page.locator('a[href*="/furinakit/"]');
+    const initialCards = page.locator('a[href*="/"]');
     const initialCount = await initialCards.count();
     
     // Type in search input
@@ -40,7 +40,7 @@ test.describe('Homepage', () => {
     await page.waitForTimeout(500);
     
     // Check filtered results
-    const filteredCards = page.locator('a[href*="/furinakit/"]');
+    const filteredCards = page.locator('a[href*="/"]');
     const filteredCount = await filteredCards.count();
     
     // Should have fewer or equal tools after filtering
@@ -61,7 +61,7 @@ test.describe('Homepage', () => {
       await page.waitForTimeout(500);
       
       // Check that tools are filtered
-      const toolCards = page.locator('a[href*="/furinakit/"]');
+      const toolCards = page.locator('a[href*="/"]');
       const count = await toolCards.count();
       expect(count).toBeGreaterThan(0);
     }

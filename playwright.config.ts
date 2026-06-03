@@ -1,12 +1,13 @@
 import { defineConfig } from '@playwright/test';
 
 const isCI = process.env.CI === 'true';
+const basePath = isCI ? '' : '/furinakit';
 
 export default defineConfig({
   testDir: './e2e',
   timeout: 30000,
   use: {
-    baseURL: isCI ? 'http://localhost:3000' : 'http://localhost:3000/furinakit',
+    baseURL: `http://localhost:3000${basePath}`,
     headless: true,
   },
   webServer: {

@@ -5,7 +5,7 @@ test.describe('Internationalization (i18n)', () => {
 
   test.beforeEach(async ({ page }) => {
     // Clear locale preference to start fresh
-    await page.goto('/furinakit/');
+    await page.goto('/');
     await page.evaluate(() => localStorage.removeItem('furinakit-locale'));
     await page.reload();
     await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });

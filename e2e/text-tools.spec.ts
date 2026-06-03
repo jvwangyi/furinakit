@@ -4,7 +4,7 @@ test.describe('Text Tools', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test('json-format should format JSON text', async ({ page }) => {
-    await page.goto('/furinakit/text/json-format');
+    await page.goto('/text/json-format');
     await page.waitForLoadState('networkidle');
 
     // Find the textarea and input JSON
@@ -22,7 +22,7 @@ test.describe('Text Tools', () => {
   });
 
   test('hash should compute hash of input text', async ({ page }) => {
-    await page.goto('/furinakit/text/hash');
+    await page.goto('/text/hash');
     await page.waitForLoadState('networkidle');
 
     // Input text
@@ -62,7 +62,7 @@ test.describe('Text Tools', () => {
   });
 
   test('uuid-gen should generate UUIDs', async ({ page }) => {
-    await page.goto('/furinakit/dev/uuid-gen');
+    await page.goto('/dev/uuid-gen');
     await page.waitForLoadState('networkidle');
 
     // uuid-gen auto-submits, but let's set count first
@@ -83,7 +83,7 @@ test.describe('Text Tools', () => {
   });
 
   test('base64 should encode text to Base64', async ({ page }) => {
-    await page.goto('/furinakit/text/base64');
+    await page.goto('/text/base64');
     await page.waitForLoadState('networkidle');
 
     // Select 'encode' action (required field, no default)

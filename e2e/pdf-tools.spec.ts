@@ -4,7 +4,7 @@ test.describe('PDF Tools', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test('pdf-rotate should load page', async ({ page }) => {
-    await page.goto('/furinakit/pdf/pdf-rotate');
+    await page.goto('/pdf/pdf-rotate');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page
@@ -13,7 +13,7 @@ test.describe('PDF Tools', () => {
   });
 
   test('pdf-compress should load page', async ({ page }) => {
-    await page.goto('/furinakit/pdf/pdf-compress');
+    await page.goto('/pdf/pdf-compress');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page
@@ -22,7 +22,7 @@ test.describe('PDF Tools', () => {
   });
 
   test('pdf-split should load page', async ({ page }) => {
-    await page.goto('/furinakit/pdf/pdf-split');
+    await page.goto('/pdf/pdf-split');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page
@@ -31,7 +31,7 @@ test.describe('PDF Tools', () => {
   });
 
   test('pdf-merge should load page', async ({ page }) => {
-    await page.goto('/furinakit/pdf/pdf-merge');
+    await page.goto('/pdf/pdf-merge');
     await page.waitForLoadState('networkidle');
 
     // Check page loaded - look for tool title in the page

@@ -2,12 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Search Functionality', () => {
   test('should filter tools by search keyword on homepage', async ({ page }) => {
-    await page.goto('/furinakit/');
+    await page.goto('/');
     await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
 
     // Get initial tool count from the main grid (not sidebar)
     const mainContent = page.locator('main, .min-h-screen').first();
-    const toolCards = mainContent.locator('a[href*="/furinakit/"]');
+    const toolCards = mainContent.locator('a[href*="/"]');
     const initialCount = await toolCards.count();
 
     // Type a keyword that should match some tools
@@ -22,7 +22,7 @@ test.describe('Search Functionality', () => {
   });
 
   test('should show empty state for non-existent search on homepage', async ({ page }) => {
-    await page.goto('/furinakit/');
+    await page.goto('/');
     await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
 
     // Search for something that doesn't exist
@@ -32,17 +32,17 @@ test.describe('Search Functionality', () => {
 
     // Verify no tool cards in the main grid
     const mainContent = page.locator('main, .min-h-screen').first();
-    const toolCards = mainContent.locator('.grid a[href*="/furinakit/"]');
+    const toolCards = mainContent.locator('.grid a[href*="/"]');
     const count = await toolCards.count();
     expect(count).toBe(0);
   });
 
   test('should restore all tools after clearing search on homepage', async ({ page }) => {
-    await page.goto('/furinakit/');
+    await page.goto('/');
     await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
 
     const mainContent = page.locator('main, .min-h-screen').first();
-    const toolCards = mainContent.locator('a[href*="/furinakit/"]');
+    const toolCards = mainContent.locator('a[href*="/"]');
 
     // Get initial count
     const initialCount = await toolCards.count();
@@ -66,11 +66,11 @@ test.describe('Search Functionality', () => {
   });
 
   test('should filter tools on category page', async ({ page }) => {
-    await page.goto('/furinakit/text');
+    await page.goto('/text');
     await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
 
     // Get initial count
-    const toolCards = page.locator('.grid a[href*="/furinakit/"]');
+    const toolCards = page.locator('.grid a[href*="/"]');
     const initialCount = await toolCards.count();
 
     // Search for a specific tool
