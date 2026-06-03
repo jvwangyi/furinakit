@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Providers } from "@/components/providers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { withBasePath } from "@/lib/basePath";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,8 +22,8 @@ export const metadata: Metadata = {
   title: "FurinaKit - Furina's Toolbox",
   description: "An elegant online toolbox with 39+ practical tools for PDF, image, text processing and more",
   icons: {
-    icon: "/furinakit/furina.jpg",
-    apple: "/furinakit/furina.jpg",
+    icon: withBasePath("/furina.jpg"),
+    apple: withBasePath("/furina.jpg"),
   },
   other: {
     "theme-color": "#3b82f6",
@@ -64,7 +65,7 @@ export default function RootLayout({
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/furinakit/sw.js').catch(() => {});
+                navigator.serviceWorker.register('${withBasePath('/sw.js')}').catch(() => {});
               });
             }
           `}

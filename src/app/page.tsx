@@ -9,6 +9,7 @@ import { Search } from 'lucide-react';
 import { apiPath } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
 import { categoryKeys } from '@/lib/constants';
+import { withBasePath } from '@/lib/basePath';
 import type { ToolInfo } from '@/types/tool';
 
 export default function HomePage() {
@@ -80,7 +81,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         <div className="relative p-4 sm:p-6 lg:p-8 pb-6 max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-3">
-            <img src="/furinakit/furina.jpg" alt="FurinaKit" className="h-14 w-14 rounded-2xl object-cover ring-2 ring-primary/20 shadow-lg" />
+            <img src={withBasePath("/furina.jpg")} alt="FurinaKit" className="h-14 w-14 rounded-2xl object-cover ring-2 ring-primary/20 shadow-lg" />
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-balance">FurinaKit</h1>
               <p className="text-sm text-muted-foreground">{t('site.subtitle')}</p>

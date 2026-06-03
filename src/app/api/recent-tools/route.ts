@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { basePath } from '@/lib/basePath';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'recent-tools.json');
 const MAX_RECENT = 20;
 const COOKIE_NAME = 'furinaki-uid';
-const COOKIE_OPTIONS = 'Path=/furinakit; Max-Age=31536000; SameSite=Lax';
+const COOKIE_PATH = basePath || '/';
 
 // Simple mutex to prevent concurrent writes
 let writeLock: Promise<void> = Promise.resolve();
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
     const res = NextResponse.json({ success: true });
     if (isNew) {
       res.cookies.set(COOKIE_NAME, uid, {
-        path: '/furinakit',
+        path: COOKIE_PATH,
         maxAge: 31536000,
         sameSite: 'lax',
       });

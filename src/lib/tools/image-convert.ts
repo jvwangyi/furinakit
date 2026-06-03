@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import sharp from 'sharp';
 import { Tool, ToolResult, register } from '../registry';
+import { ToolError, ErrorCode } from '../errors';
 
 const inputSchema = z.object({
   file: z.instanceof(Buffer),
@@ -15,30 +16,34 @@ const tool: Tool = {
   inputSchema,
   execute: async (input): Promise<ToolResult> => {
     const { file, format, quality } = inputSchema.parse(input);
-    
-    let image = sharp(file);
-    
-    const options: any = {};
-    if (quality && ['jpeg', 'webp', 'avif'].includes(format)) {
-      options.quality = quality;
+
+    try {
+      let image = sharp(file);
+
+      const options: Record<string, number> = {};
+      if (quality && ['jpeg', 'webp', 'avif'].includes(format)) {
+        options.quality = quality;
+      }
+
+      const buffer = await image.toFormat(format as keyof sharp.FormatEnum, options).toBuffer();
+
+      const mimeTypes: Record<string, string> = {
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        avif: 'image/avif',
+        tiff: 'image/tiff',
+        gif: 'image/gif',
+      };
+
+      return {
+        data: buffer,
+        mimeType: mimeTypes[format],
+        filename: `converted.${format}`,
+      };
+    } catch (e) {
+      throw new ToolError(ErrorCode.PROCESS_FAILED, `Image convert failed: ${(e as Error).message}`);
     }
-    
-    const buffer = await image.toFormat(format as any, options).toBuffer();
-    
-    const mimeTypes: Record<string, string> = {
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      webp: 'image/webp',
-      avif: 'image/avif',
-      tiff: 'image/tiff',
-      gif: 'image/gif',
-    };
-    
-    return {
-      data: buffer,
-      mimeType: mimeTypes[format],
-      filename: `converted.${format}`,
-    };
   },
 };
 

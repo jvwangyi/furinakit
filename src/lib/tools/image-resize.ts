@@ -19,33 +19,38 @@ const tool: Tool = {
   inputSchema,
   execute: async (input): Promise<ToolResult> => {
     const { file, width, height, fit, lockAspectRatio, format } = inputSchema.parse(input);
-    
+
     if (!width && !height) {
       throw new ToolError(ErrorCode.MISSING_REQUIRED, 'At least one of width or height is required');
     }
-    
-    const image = sharp(file);
-    const metadata = await image.metadata();
-    
-    // When lockAspectRatio is true and both dimensions are provided, use 'inside' to maintain ratio
-    const effectiveFit = lockAspectRatio && width && height ? 'inside' : fit;
-    const resized = image.resize(width, height, { fit: effectiveFit });
-    
-    const outputFormat = format || metadata.format || 'png';
-    const buffer = await resized.toFormat(outputFormat as any).toBuffer();
-    
-    const mimeTypes: Record<string, string> = {
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      webp: 'image/webp',
-      avif: 'image/avif',
-    };
-    
-    return {
-      data: buffer,
-      mimeType: mimeTypes[outputFormat] || 'image/png',
-      filename: `resized.${outputFormat}`,
-    };
+
+    try {
+      const image = sharp(file);
+      const metadata = await image.metadata();
+
+      // When lockAspectRatio is true and both dimensions are provided, use 'inside' to maintain ratio
+      const effectiveFit = lockAspectRatio && width && height ? 'inside' : fit;
+      const resized = image.resize(width, height, { fit: effectiveFit });
+
+      const outputFormat = format || metadata.format || 'png';
+      const buffer = await resized.toFormat(outputFormat as keyof sharp.FormatEnum).toBuffer();
+
+      const mimeTypes: Record<string, string> = {
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        avif: 'image/avif',
+      };
+
+      return {
+        data: buffer,
+        mimeType: mimeTypes[outputFormat] || 'image/png',
+        filename: `resized.${outputFormat}`,
+      };
+    } catch (e) {
+      if (e instanceof ToolError) throw e;
+      throw new ToolError(ErrorCode.PROCESS_FAILED, `Image resize failed: ${(e as Error).message}`);
+    }
   },
 };
 

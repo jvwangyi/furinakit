@@ -10,6 +10,9 @@ export interface ToolUsage {
 const DATA_DIR = path.join(process.cwd(), 'data');
 const STATS_FILE = path.join(DATA_DIR, 'stats.json');
 
+// Simple mutex to prevent concurrent writes
+let writeLock: Promise<void> = Promise.resolve();
+
 async function ensureDataDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
 }
@@ -24,8 +27,11 @@ async function readStats(): Promise<ToolUsage[]> {
 }
 
 async function writeStats(stats: ToolUsage[]) {
-  await ensureDataDir();
-  await fs.writeFile(STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8');
+  writeLock = writeLock.then(async () => {
+    await ensureDataDir();
+    await fs.writeFile(STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8');
+  });
+  await writeLock;
 }
 
 export async function recordToolUsage(toolName: string): Promise<ToolUsage> {

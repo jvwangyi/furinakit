@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Tool, ToolResult, register } from '../registry';
+import { ToolError, ErrorCode } from '../errors';
 
 const inputSchema = z.object({
   expression: z.string().min(1),
@@ -78,11 +79,16 @@ const tool: Tool = {
   inputSchema,
   execute: async (input): Promise<ToolResult> => {
     const { expression, count } = inputSchema.parse(input);
-    const nextRuns = getNextExecutions(expression, count);
 
-    return {
-      text: JSON.stringify({ expression, nextRuns }, null, 2),
-    };
+    try {
+      const nextRuns = getNextExecutions(expression, count);
+
+      return {
+        text: JSON.stringify({ expression, nextRuns }, null, 2),
+      };
+    } catch (e) {
+      throw new ToolError(ErrorCode.INVALID_INPUT, `Cron parse failed: ${(e as Error).message}`);
+    }
   },
 };
 

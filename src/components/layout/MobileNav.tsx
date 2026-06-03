@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
+import { withBasePath } from '@/lib/basePath';
 import {
   FileText,
   Image,
@@ -58,7 +59,7 @@ export function MobileNav() {
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
           <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-            <img src="/furinakit/furina.jpg" alt="FurinaKit" className="h-8 w-8 rounded-lg object-cover" />
+            <img src={withBasePath("/furina.jpg")} alt="FurinaKit" className="h-8 w-8 rounded-lg object-cover" />
             <span className="font-bold text-lg">FurinaKit</span>
           </Link>
         </div>

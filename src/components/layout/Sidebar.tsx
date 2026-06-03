@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn, apiPath } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
+import { withBasePath } from '@/lib/basePath';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import {
@@ -92,7 +93,7 @@ export function Sidebar() {
           collapsedWidth ? 'justify-center px-3 py-4' : 'gap-3 px-6 py-5'
         )}>
           <Link href="/" className="flex items-center shrink-0">
-            <img src="/furinakit/furina.jpg" alt="FurinaKit" className="h-10 w-10 rounded-xl object-cover ring-2 ring-sidebar-primary/30" />
+            <img src={withBasePath("/furina.jpg")} alt="FurinaKit" className="h-10 w-10 rounded-xl object-cover ring-2 ring-sidebar-primary/30" />
           </Link>
           {!collapsedWidth && (
             <Link href="/" className="min-w-0">

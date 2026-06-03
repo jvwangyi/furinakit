@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { withBasePath } from '@/lib/basePath';
 
 export default function ApiDocsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -19,7 +20,7 @@ export default function ApiDocsPage() {
       if (window.SwaggerUIBundle && containerRef.current) {
         // @ts-expect-error SwaggerUIBundle is loaded from CDN
         window.SwaggerUIBundle({
-          url: '/furinakit/api/docs/spec',
+          url: withBasePath('/api/docs/spec'),
           domNode: containerRef.current,
           deepLinking: true,
           presets: [

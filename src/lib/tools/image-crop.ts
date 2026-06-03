@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import sharp from 'sharp';
 import { Tool, ToolResult, register } from '../registry';
+import { ToolError, ErrorCode } from '../errors';
 
 const inputSchema = z.object({
   file: z.instanceof(Buffer),
@@ -18,27 +19,31 @@ const tool: Tool = {
   inputSchema,
   execute: async (input): Promise<ToolResult> => {
     const { file, left, top, width, height, format } = inputSchema.parse(input);
-    
-    const image = sharp(file);
-    const metadata = await image.metadata();
-    
-    const cropped = image.extract({ left, top, width, height });
-    
-    const outputFormat = format || metadata.format || 'png';
-    const buffer = await cropped.toFormat(outputFormat as any).toBuffer();
-    
-    const mimeTypes: Record<string, string> = {
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      webp: 'image/webp',
-      avif: 'image/avif',
-    };
-    
-    return {
-      data: buffer,
-      mimeType: mimeTypes[outputFormat] || 'image/png',
-      filename: `cropped.${outputFormat}`,
-    };
+
+    try {
+      const image = sharp(file);
+      const metadata = await image.metadata();
+
+      const cropped = image.extract({ left, top, width, height });
+
+      const outputFormat = format || metadata.format || 'png';
+      const buffer = await cropped.toFormat(outputFormat as keyof sharp.FormatEnum).toBuffer();
+
+      const mimeTypes: Record<string, string> = {
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        avif: 'image/avif',
+      };
+
+      return {
+        data: buffer,
+        mimeType: mimeTypes[outputFormat] || 'image/png',
+        filename: `cropped.${outputFormat}`,
+      };
+    } catch (e) {
+      throw new ToolError(ErrorCode.PROCESS_FAILED, `Image crop failed: ${(e as Error).message}`);
+    }
   },
 };
 

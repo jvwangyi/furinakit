@@ -6,6 +6,24 @@ import type { Tool } from '../types/tool';
 // Ensure all tools are registered when any route uses createToolRoute
 import './tools';
 
+/** File size limits by category (bytes) */
+export const MAX_FILE_SIZE: Record<string, number> = {
+  image: 20 * 1024 * 1024,    // 20 MB
+  pdf: 50 * 1024 * 1024,      // 50 MB
+  video: 200 * 1024 * 1024,   // 200 MB
+  audio: 200 * 1024 * 1024,   // 200 MB
+  default: 50 * 1024 * 1024,  // 50 MB
+};
+
+/** Check if a buffer exceeds the size limit for a given category */
+export function checkFileSize(buffer: Buffer, category?: string): void {
+  const limit = MAX_FILE_SIZE[category || 'default'] || MAX_FILE_SIZE.default;
+  if (buffer.length > limit) {
+    const limitMB = Math.round(limit / (1024 * 1024));
+    throw new ToolError(ErrorCode.FILE_TOO_LARGE, `File too large (max ${limitMB}MB)`);
+  }
+}
+
 export async function parseJsonInput(req: NextRequest) {
   try {
     return await req.json();
@@ -19,11 +37,12 @@ export async function parseFormDataInput(req: NextRequest) {
     const formData = await req.formData();
     const result: Record<string, any> = {};
     const fileCounts: Record<string, number> = {};
-    
+
     for (const [key, value] of formData.entries()) {
       if (value instanceof File) {
         const arrayBuffer = await value.arrayBuffer();
         const buf = Buffer.from(arrayBuffer);
+        checkFileSize(buf);
         fileCounts[key] = (fileCounts[key] || 0) + 1;
         if (fileCounts[key] > 1) {
           if (!Array.isArray(result[key])) result[key] = [result[key]];
@@ -40,9 +59,10 @@ export async function parseFormDataInput(req: NextRequest) {
         }
       }
     }
-    
+
     return result;
-  } catch {
+  } catch (e) {
+    if (e instanceof ToolError) throw e;
     throw new ToolError(ErrorCode.INVALID_INPUT, 'Invalid form data');
   }
 }
@@ -66,10 +86,16 @@ export function validateToolInput(tool: Tool, input: unknown) {
 }
 
 export function bufferToResponse(buffer: Buffer, mimeType: string, filename: string) {
+  // RFC 5987: encode non-ASCII filenames
+  const isAscii = /^[\x20-\x7E]+$/.test(filename);
+  const disposition = isAscii
+    ? `attachment; filename="${filename}"`
+    : `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
+
   return new Response(new Uint8Array(buffer), {
     headers: {
       'Content-Type': mimeType,
-      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Disposition': disposition,
     },
   });
 }
@@ -84,6 +110,7 @@ export async function parseFormDataFile(req: NextRequest): Promise<{ file: Buffe
       if (value instanceof File) {
         const arrayBuffer = await value.arrayBuffer();
         file = Buffer.from(arrayBuffer);
+        checkFileSize(file);
       } else {
         // Try to parse JSON values
         try {

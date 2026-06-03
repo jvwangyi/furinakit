@@ -1,8 +1,8 @@
-﻿// 拼豆底稿生成?- 参?Zippland/perler-beads
+﻿// 拼豆底稿生成器 — 参考 Zippland/perler-beads
 
 // 纯浏览器端实现，使用 Canvas API
 
-// 支持 Floyd-Steinberg 抖动算法、多品牌色板、感知加权颜色匹?
+// 支持 Floyd-Steinberg 抖动算法、多品牌色板、感知加权颜色匹配
 
 export interface PerlerColor {
 

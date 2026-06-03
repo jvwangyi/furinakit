@@ -56,3 +56,6 @@ test-results/
 
 # archived documentation
 /docs/archive/
+
+# CodeGraph MCP index
+/.codegraph/
