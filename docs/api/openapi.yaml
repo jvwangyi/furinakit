@@ -1,0 +1,1725 @@
+openapi: 3.0.3
+info:
+  title: FurinaKit API
+  description: |
+    FurinaKit 是一个多功能在线工具箱，提供 PDF、图片、音视频、文本处理等 48 个工具的 API。
+    
+    ## 请求格式
+    - **文本工具**：`Content-Type: application/json`
+    - **文件工具**：`Content-Type: multipart/form-data`
+    
+    ## 响应格式
+    - **文件下载**：返回二进制文件流（带 Content-Disposition 头）
+    - **JSON 文本**：返回 `{ success: true, data: { text: "..." } }`
+    - **错误**：返回 `{ success: false, error: { code: "...", message: "..." } }`
+  version: 0.1.0
+  contact:
+    name: FurinaKit
+servers:
+  - url: /furinakit
+    description: Production (with basePath)
+
+tags:
+  - name: pdf
+    description: PDF 处理工具 — 合并、拆分、压缩、旋转、加密、水印等
+  - name: image
+    description: 图片处理工具 — 调整大小、裁剪、格式转换、压缩、水印等
+  - name: text
+    description: 文本处理工具 — JSON格式化、文本对比、哈希、编码、正则等
+  - name: dev
+    description: 开发者工具 — UUID生成、密码生成、二维码、JWT解码、SQL格式化等
+  - name: audio
+    description: 音频处理工具 — 格式转换、裁剪
+  - name: video
+    description: 视频处理工具 — 压缩、提取音频、裁剪
+  - name: convert
+    description: 格式转换工具 — CSV转Excel、图片转PDF、YAML/XML/JSON互转
+  - name: file
+    description: 文件分析工具 — 文件信息、文件哈希
+  - name: craft
+    description: 手工工具 — 拼豆底稿生成器
+
+paths:
+  # ==================== PDF 工具 ====================
+  /api/pdf/merge:
+    post:
+      tags: [pdf]
+      summary: 合并 PDF
+      description: 将多个 PDF 文件合并为一个
+      operationId: pdfMerge
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: "至少 2 个 PDF 文件"
+                  minItems: 2
+      responses:
+        '200':
+          description: 合并后的 PDF 文件
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/pdf/split:
+    post:
+      tags: [pdf]
+      summary: 拆分 PDF
+      description: 将 PDF 拆分为单独的页面或页面范围
+      operationId: pdfSplit
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF 文件
+                pages:
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 1
+                  description: "要提取的页码列表（1-indexed），如 [1, 3, 5]"
+                ranges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      start:
+                        type: integer
+                        minimum: 1
+                      end:
+                        type: integer
+                        minimum: 1
+                  description: "页面范围列表，如 [{start:1, end:3}]"
+      responses:
+        '200':
+          description: 拆分后的 PDF 文件
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /api/pdf/compress:
+    post:
+      tags: [pdf]
+      summary: 压缩 PDF
+      description: 压缩 PDF 文件以减小体积
+      operationId: pdfCompress
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF 文件
+                quality:
+                  type: string
+                  enum: [low, medium, high]
+                  default: medium
+                  description: "压缩质量：low（轻度）、medium（中度）、high（高度）"
+      responses:
+        '200':
+          description: 压缩后的 PDF 文件
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /api/pdf/to-image:
+    post:
+      tags: [pdf]
+      summary: PDF 转图片
+      description: 将 PDF 页面转换为图片（生成带页面信息的预览图）
+      operationId: pdfToImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF 文件
+                page:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                  description: 要转换的页码
+                format:
+                  type: string
+                  enum: [png, jpeg, webp]
+                  default: png
+                  description: 输出图片格式
+                scale:
+                  type: number
+                  minimum: 0.1
+                  maximum: 3
+                  default: 1
+                  description: 缩放比例
+      responses:
+        '200':
+          description: 转换后的图片
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+
+  /api/pdf/rotate:
+    post:
+      tags: [pdf]
+      summary: 旋转 PDF 页面
+      description: 旋转 PDF 中的页面
+      operationId: pdfRotate
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, rotation]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF 文件
+                rotation:
+                  type: integer
+                  description: "旋转角度（必须是 90 的倍数），如 90, 180, 270"
+                  example: 90
+                pages:
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 1
+                  description: "要旋转的页码列表（1-indexed），不传则旋转所有页面"
+      responses:
+        '200':
+          description: 旋转后的 PDF 文件
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /api/pdf/extract-pages:
+    post:
+      tags: [pdf]
+      summary: 提取 PDF 页面
+      description: 从 PDF 中提取指定页面
+      operationId: pdfExtractPages
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, pages]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF 文件
+                pages:
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 1
+                  minItems: 1
+                  description: "要提取的页码列表（1-indexed），如 [1, 3, 5]"
+      responses:
+        '200':
+          description: 提取后的 PDF 文件
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /api/pdf/encrypt:
+    post:
+      tags: [pdf]
+      summary: 加密 PDF
+      description: 为 PDF 添加密码保护
+      operationId: pdfEncrypt
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, password]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF 文件
+                password:
+                  type: string
+                  minLength: 1
+                  description: 用户密码（打开文档时需要）
+                ownerPassword:
+                  type: string
+                  description: 所有者密码（可选，默认与用户密码相同）
+      responses:
+        '200':
+          description: 加密后的 PDF 文件
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /api/pdf/watermark:
+    post:
+      tags: [pdf]
+      summary: PDF 添加水印
+      description: 为 PDF 添加文字水印
+      operationId: pdfWatermark
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, text]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF 文件
+                text:
+                  type: string
+                  minLength: 1
+                  description: 水印文字
+                fontSize:
+                  type: integer
+                  minimum: 10
+                  maximum: 200
+                  default: 50
+                  description: 字体大小
+                opacity:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  default: 0.3
+                  description: 透明度（0-1）
+                color:
+                  type: string
+                  default: "#888888"
+                  description: 水印颜色（HEX）
+                position:
+                  type: string
+                  enum: [center, top-left, top-right, bottom-left, bottom-right]
+                  default: center
+                  description: 水印位置
+      responses:
+        '200':
+          description: 添加水印后的 PDF 文件
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  # ==================== 图片工具 ====================
+  /api/image/resize:
+    post:
+      tags: [image]
+      summary: 调整图片大小
+      description: 调整图片尺寸，支持多种适配模式
+      operationId: imageResize
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 图片文件
+                width:
+                  type: integer
+                  minimum: 1
+                  description: 目标宽度（像素）。width 和 height 至少传一个
+                height:
+                  type: integer
+                  minimum: 1
+                  description: 目标高度（像素）
+                fit:
+                  type: string
+                  enum: [cover, contain, fill, inside, outside]
+                  default: cover
+                  description: 适配模式
+                format:
+                  type: string
+                  enum: [jpeg, png, webp, avif]
+                  description: 输出格式（默认保持原格式）
+      responses:
+        '200':
+          description: 调整大小后的图片
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+  /api/image/crop:
+    post:
+      tags: [image]
+      summary: 裁剪图片
+      description: 裁剪图片到指定区域
+      operationId: imageCrop
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, left, top, width, height]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 图片文件
+                left:
+                  type: integer
+                  minimum: 0
+                  description: 左上角 X 坐标
+                top:
+                  type: integer
+                  minimum: 0
+                  description: 左上角 Y 坐标
+                width:
+                  type: integer
+                  minimum: 1
+                  description: 裁剪区域宽度
+                height:
+                  type: integer
+                  minimum: 1
+                  description: 裁剪区域高度
+                format:
+                  type: string
+                  enum: [jpeg, png, webp, avif]
+                  description: 输出格式
+      responses:
+        '200':
+          description: 裁剪后的图片
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+  /api/image/convert:
+    post:
+      tags: [image]
+      summary: 图片格式转换
+      description: 在 JPEG、PNG、WebP、AVIF、TIFF、GIF 之间转换
+      operationId: imageConvert
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, format]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 图片文件
+                format:
+                  type: string
+                  enum: [jpeg, png, webp, avif, tiff, gif]
+                  description: 目标格式
+                quality:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  description: 质量（仅 jpeg/webp/avif 有效）
+      responses:
+        '200':
+          description: 转换后的图片
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+  /api/image/compress:
+    post:
+      tags: [image]
+      summary: 压缩图片
+      description: 压缩图片以减小文件大小
+      operationId: imageCompress
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 图片文件
+                quality:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 80
+                  description: 压缩质量（1-100）
+                format:
+                  type: string
+                  enum: [jpeg, webp, png]
+                  description: 输出格式（默认保持原格式）
+      responses:
+        '200':
+          description: 压缩后的图片
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+  /api/image/rotate:
+    post:
+      tags: [image]
+      summary: 旋转图片
+      description: 旋转图片并支持翻转
+      operationId: imageRotate
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 图片文件
+                angle:
+                  type: integer
+                  default: 0
+                  description: 旋转角度
+                background:
+                  type: string
+                  default: "#00000000"
+                  description: 背景颜色（RGBA HEX）
+                flip:
+                  type: string
+                  enum: [none, horizontal, vertical]
+                  default: none
+                  description: 翻转方向
+      responses:
+        '200':
+          description: 旋转后的图片
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+  /api/image/merge:
+    post:
+      tags: [image]
+      summary: 合并图片
+      description: 将多张图片水平或垂直拼接
+      operationId: imageMerge
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  minItems: 2
+                  description: "至少 2 张图片"
+                direction:
+                  type: string
+                  enum: [horizontal, vertical]
+                  default: horizontal
+                  description: 拼接方向
+                background:
+                  type: string
+                  default: "#ffffff"
+                  description: 背景颜色
+      responses:
+        '200':
+          description: 合并后的图片
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+
+  /api/image/add-watermark:
+    post:
+      tags: [image]
+      summary: 图片添加水印
+      description: 为图片添加文字水印
+      operationId: imageAddWatermark
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, text]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 图片文件
+                text:
+                  type: string
+                  minLength: 1
+                  description: 水印文字
+                position:
+                  type: string
+                  enum: [center, bottom-right, bottom-left, top-right, top-left]
+                  default: bottom-right
+                  description: 水印位置
+                opacity:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  default: 0.5
+                  description: 透明度
+                fontSize:
+                  type: integer
+                  minimum: 10
+                  maximum: 200
+                  default: 48
+                  description: 字体大小
+                color:
+                  type: string
+                  default: "#ffffff"
+                  description: 文字颜色
+      responses:
+        '200':
+          description: 添加水印后的图片
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+  /api/image/to-ico:
+    post:
+      tags: [image]
+      summary: 图片转 ICO
+      description: 将图片转换为 ICO 格式（favicon）
+      operationId: imageToIco
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 图片文件
+                size:
+                  type: integer
+                  minimum: 16
+                  maximum: 256
+                  default: 64
+                  description: ICO 尺寸（像素）
+      responses:
+        '200':
+          description: ICO 文件
+          content:
+            image/x-icon:
+              schema:
+                type: string
+                format: binary
+
+  # ==================== 文本工具 ====================
+  /api/text/json-format:
+    post:
+      tags: [text]
+      summary: JSON 格式化
+      description: 格式化和美化 JSON 字符串
+      operationId: jsonFormat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: JSON 字符串
+                indent:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  default: 2
+                  description: 缩进空格数
+                sortKeys:
+                  type: boolean
+                  default: false
+                  description: 是否排序键名
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/diff:
+    post:
+      tags: [text]
+      summary: 文本对比
+      description: 比较两段文本并显示差异
+      operationId: textDiff
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [oldText, newText]
+              properties:
+                oldText:
+                  type: string
+                  description: 原始文本
+                newText:
+                  type: string
+                  description: 新文本
+                mode:
+                  type: string
+                  enum: [lines, words, chars]
+                  default: lines
+                  description: 对比模式
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/base64:
+    post:
+      tags: [text]
+      summary: Base64 编解码
+      description: 编码或解码 Base64 字符串和文件
+      operationId: base64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                text:
+                  type: string
+                  description: 要编码/解码的文本
+                file:
+                  type: string
+                  description: 文件的 Base64 编码（用于编码文件）
+                action:
+                  type: string
+                  enum: [encode, decode]
+                  description: 操作类型
+                encoding:
+                  type: string
+                  enum: [base64, base64url]
+                  default: base64
+                  description: 编码格式
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/hash:
+    post:
+      tags: [text]
+      summary: 文本/文件哈希
+      description: 计算文本或文件的哈希值（MD5, SHA1, SHA256, SHA384, SHA512）
+      operationId: hash
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: 要计算哈希的文本
+                file:
+                  type: string
+                  description: 文件的 Base64 编码
+                algorithm:
+                  type: string
+                  enum: [md5, sha1, sha256, sha384, sha512]
+                  default: sha256
+                  description: 哈希算法
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/url-encode:
+    post:
+      tags: [text]
+      summary: URL 编解码
+      description: 编码或解码 URL 字符串
+      operationId: urlEncode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text, action]
+              properties:
+                text:
+                  type: string
+                  description: URL 字符串
+                action:
+                  type: string
+                  enum: [encode, decode]
+                  description: 操作类型
+                component:
+                  type: string
+                  enum: [full, component]
+                  default: component
+                  description: "编码范围：full（整个 URL）或 component（URL 组件）"
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/json-to-csv:
+    post:
+      tags: [text]
+      summary: JSON 转 CSV
+      description: 将 JSON 数组转换为 CSV 格式
+      operationId: jsonToCsv
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: JSON 数组字符串
+                delimiter:
+                  type: string
+                  default: ","
+                  description: 分隔符
+                header:
+                  type: boolean
+                  default: true
+                  description: 是否包含表头
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/csv-to-json:
+    post:
+      tags: [text]
+      summary: CSV 转 JSON
+      description: 将 CSV 文本转换为 JSON 数组
+      operationId: csvToJson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: CSV 文本
+                delimiter:
+                  type: string
+                  default: ","
+                  description: 分隔符
+                header:
+                  type: boolean
+                  default: true
+                  description: 是否将第一行作为表头
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/json-to-yaml:
+    post:
+      tags: [text]
+      summary: JSON 转 YAML
+      description: 将 JSON 转换为 YAML 格式
+      operationId: jsonToYaml
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: JSON 字符串
+                indent:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 2
+                  description: 缩进空格数
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/json-to-xml:
+    post:
+      tags: [text]
+      summary: JSON 转 XML
+      description: 将 JSON 转换为 XML 格式
+      operationId: jsonToXml
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: JSON 字符串
+                rootName:
+                  type: string
+                  default: root
+                  description: 根元素名称
+                indent:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  default: 2
+                  description: 缩进空格数
+                arrayItemName:
+                  type: string
+                  default: item
+                  description: 数组元素名称
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/markdown-to-html:
+    post:
+      tags: [text]
+      summary: Markdown 转 HTML
+      description: 将 Markdown 转换为 HTML
+      operationId: markdownToHtml
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: Markdown 文本
+                gfm:
+                  type: boolean
+                  default: true
+                  description: 启用 GitHub Flavored Markdown
+                breaks:
+                  type: boolean
+                  default: false
+                  description: 将换行符转换为 <br>
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/regex-tester:
+    post:
+      tags: [text]
+      summary: 正则表达式测试
+      description: 测试正则表达式并返回匹配详情
+      operationId: regexTester
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text, pattern]
+              properties:
+                text:
+                  type: string
+                  description: 测试文本
+                pattern:
+                  type: string
+                  description: 正则表达式
+                flags:
+                  type: string
+                  default: g
+                  description: 正则标志（如 g, i, m）
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/text-case:
+    post:
+      tags: [text]
+      summary: 文本大小写转换
+      description: 在不同大小写格式之间转换文本
+      operationId: textCase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text, case]
+              properties:
+                text:
+                  type: string
+                  description: 原始文本
+                case:
+                  type: string
+                  enum: [upper, lower, title, camel, snake, kebab, pascal, sentence]
+                  description: "目标格式：upper（全大写）、lower（全小写）、title（首字母大写）、camel（驼峰）、snake（蛇形）、kebab（短横线）、pascal（帕斯卡）、sentence（句首大写）"
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/text/text-count:
+    post:
+      tags: [text]
+      summary: 文本统计
+      description: 统计文本的字符数、词数、行数、句子数、段落数
+      operationId: textCount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: 要统计的文本
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  # ==================== 开发者工具 ====================
+  /api/dev/jwt-decode:
+    post:
+      tags: [dev]
+      summary: JWT 解码
+      description: 解码 JWT token（不验证签名）
+      operationId: jwtDecode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  description: JWT token 字符串
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/dev/timestamp:
+    post:
+      tags: [dev]
+      summary: 时间戳转换
+      description: 在 Unix 时间戳和日期之间转换
+      operationId: timestamp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [value]
+              properties:
+                mode:
+                  type: string
+                  enum: [to-date, from-date]
+                  default: to-date
+                  description: "转换模式：to-date（时间戳转日期）、from-date（日期转时间戳）"
+                value:
+                  type: string
+                  description: "输入值（时间戳或日期字符串）"
+                format:
+                  type: string
+                  enum: [iso, locale, unix]
+                  default: iso
+                  description: "输出格式（仅 to-date 模式有效）"
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/dev/sql-format:
+    post:
+      tags: [dev]
+      summary: SQL 格式化
+      description: 格式化 SQL 查询语句
+      operationId: sqlFormat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: SQL 查询语句
+                language:
+                  type: string
+                  enum: [sql, mysql, postgresql, sqlite, bigquery, tsql, plsql]
+                  default: sql
+                  description: SQL 方言
+                indent:
+                  type: string
+                  enum: ['1', '2', '4', tab]
+                  default: '2'
+                  description: 缩进
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/dev/uuid-gen:
+    post:
+      tags: [dev]
+      summary: UUID 生成
+      description: 生成 UUID v4 标识符
+      operationId: uuidGen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 1
+                  description: 生成数量
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/dev/password-gen:
+    post:
+      tags: [dev]
+      summary: 密码生成
+      description: 生成安全随机密码
+      operationId: passwordGen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                length:
+                  type: integer
+                  minimum: 4
+                  maximum: 128
+                  default: 16
+                  description: 密码长度
+                uppercase:
+                  type: boolean
+                  default: true
+                  description: 包含大写字母
+                lowercase:
+                  type: boolean
+                  default: true
+                  description: 包含小写字母
+                numbers:
+                  type: boolean
+                  default: true
+                  description: 包含数字
+                symbols:
+                  type: boolean
+                  default: true
+                  description: 包含特殊符号
+                count:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                  default: 1
+                  description: 生成数量
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/dev/qrcode-gen:
+    post:
+      tags: [dev]
+      summary: 二维码生成
+      description: 从文本或 URL 生成二维码
+      operationId: qrcodeGen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  description: 二维码内容
+                format:
+                  type: string
+                  enum: [png, svg, terminal]
+                  default: png
+                  description: 输出格式
+                size:
+                  type: integer
+                  minimum: 50
+                  maximum: 1000
+                  default: 256
+                  description: 图片尺寸（像素，仅 png/svg 有效）
+                errorCorrectionLevel:
+                  type: string
+                  enum: [L, M, Q, H]
+                  default: M
+                  description: 纠错级别
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/dev/color-convert:
+    post:
+      tags: [dev]
+      summary: 颜色格式转换
+      description: 在 HEX、RGB、HSL 颜色格式之间转换
+      operationId: colorConvert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [color, from, to]
+              properties:
+                color:
+                  type: string
+                  description: "颜色值（如 #ff0000, rgb(255,0,0), hsl(0,100%,50%)）"
+                from:
+                  type: string
+                  enum: [hex, rgb, hsl]
+                  description: 源格式
+                to:
+                  type: string
+                  enum: [hex, rgb, hsl]
+                  description: 目标格式
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  # ==================== 音频工具 ====================
+  /api/audio/convert:
+    post:
+      tags: [audio]
+      summary: 音频格式转换
+      description: 在 MP3、WAV、AAC、OGG、FLAC 之间转换音频格式
+      operationId: audioConvert
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 音频文件
+                format:
+                  type: string
+                  enum: [mp3, wav, aac, ogg, flac]
+                  default: mp3
+                  description: 目标格式
+                quality:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 80
+                  description: 音频质量（映射到 32-320kbps）
+      responses:
+        '200':
+          description: 转换后的音频文件
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+            audio/aac:
+              schema:
+                type: string
+                format: binary
+            audio/ogg:
+              schema:
+                type: string
+                format: binary
+            audio/flac:
+              schema:
+                type: string
+                format: binary
+
+  /api/audio/trim:
+    post:
+      tags: [audio]
+      summary: 音频裁剪
+      description: 裁剪音频到指定时间范围
+      operationId: audioTrim
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, startTime]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 音频文件
+                startTime:
+                  type: string
+                  pattern: '^\d{2}:\d{2}:\d{2}$'
+                  description: "开始时间（HH:MM:SS），如 00:01:30"
+                endTime:
+                  type: string
+                  pattern: '^\d{2}:\d{2}:\d{2}$'
+                  description: "结束时间（HH:MM:SS），与 duration 二选一"
+                duration:
+                  type: string
+                  pattern: '^\d{2}:\d{2}:\d{2}$'
+                  description: "持续时间（HH:MM:SS），与 endTime 二选一"
+      responses:
+        '200':
+          description: 裁剪后的音频文件
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+
+  # ==================== 视频工具 ====================
+  /api/video/to-audio:
+    post:
+      tags: [video]
+      summary: 视频提取音频
+      description: 从视频文件中提取音频
+      operationId: videoToAudio
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 视频文件
+                format:
+                  type: string
+                  enum: [mp3, wav, aac, ogg]
+                  default: mp3
+                  description: 音频输出格式
+                quality:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 80
+                  description: 音频质量
+      responses:
+        '200':
+          description: 提取的音频文件
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+
+  /api/video/compress:
+    post:
+      tags: [video]
+      summary: 压缩视频
+      description: 压缩视频以减小文件大小
+      operationId: videoCompress
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 视频文件
+                quality:
+                  type: string
+                  enum: [low, medium, high]
+                  default: medium
+                  description: "压缩质量：low（高压缩）、medium（平衡）、high（低压缩）"
+                maxWidth:
+                  type: integer
+                  minimum: 100
+                  maximum: 3840
+                  description: 最大宽度（像素），可选
+      responses:
+        '200':
+          description: 压缩后的视频
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+
+  /api/video/trim:
+    post:
+      tags: [video]
+      summary: 视频裁剪
+      description: 裁剪视频到指定时长
+      operationId: videoTrim
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, startTime]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 视频文件
+                startTime:
+                  type: string
+                  pattern: '^\d{2}:\d{2}:\d{2}$'
+                  description: "开始时间（HH:MM:SS）"
+                endTime:
+                  type: string
+                  pattern: '^\d{2}:\d{2}:\d{2}$'
+                  description: "结束时间（HH:MM:SS），与 duration 二选一"
+                duration:
+                  type: string
+                  pattern: '^\d{2}:\d{2}:\d{2}$'
+                  description: "持续时间（HH:MM:SS），与 endTime 二选一"
+      responses:
+        '200':
+          description: 裁剪后的视频
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+
+  # ==================== 格式转换工具 ====================
+  /api/convert/csv-to-excel:
+    post:
+      tags: [convert]
+      summary: CSV 转 Excel
+      description: 将 CSV 文件转换为 Excel (.xlsx) 格式
+      operationId: csvToExcel
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV 文件
+                delimiter:
+                  type: string
+                  default: ","
+                  description: 分隔符
+                header:
+                  type: boolean
+                  default: true
+                  description: 是否将第一行作为表头
+                sheetName:
+                  type: string
+                  default: Sheet1
+                  description: 工作表名称
+      responses:
+        '200':
+          description: Excel 文件
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+
+  /api/convert/image-to-pdf:
+    post:
+      tags: [convert]
+      summary: 图片转 PDF
+      description: 将一张或多张图片转换为 PDF 文件
+      operationId: imageToPdf
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  minItems: 1
+                  description: 图片文件列表
+                pageSize:
+                  type: string
+                  enum: [A4, Letter, fit]
+                  default: A4
+                  description: "页面大小：A4、Letter 或 fit（适应图片大小）"
+      responses:
+        '200':
+          description: PDF 文件
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /api/convert/yaml-to-json:
+    post:
+      tags: [convert]
+      summary: YAML 转 JSON
+      description: 将 YAML 文本转换为 JSON 格式
+      operationId: yamlToJson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: YAML 文本
+                indent:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  default: 2
+                  description: JSON 缩进空格数
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/convert/xml-to-json:
+    post:
+      tags: [convert]
+      summary: XML 转 JSON
+      description: 将 XML 文本转换为 JSON 格式
+      operationId: xmlToJson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: XML 文本
+                indent:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  default: 2
+                  description: JSON 缩进空格数
+                ignoreAttributes:
+                  type: boolean
+                  default: false
+                  description: 是否忽略 XML 属性
+                attributeNamePrefix:
+                  type: string
+                  default: "@"
+                  description: 属性名前缀
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  # ==================== 文件工具 ====================
+  /api/file/file-info:
+    post:
+      tags: [file]
+      summary: 文件信息
+      description: 获取文件元数据，包括大小、类型和哈希值
+      operationId: fileInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file, filename]
+              properties:
+                file:
+                  type: string
+                  description: 文件的 Base64 编码
+                filename:
+                  type: string
+                  description: 文件名
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+  /api/file/file-hash:
+    post:
+      tags: [file]
+      summary: 文件哈希
+      description: 计算文件的哈希值（MD5, SHA1, SHA256, SHA512）
+      operationId: fileHash
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  description: 文件的 Base64 编码
+                algorithm:
+                  type: string
+                  enum: [md5, sha1, sha256, sha512]
+                  default: sha256
+                  description: 哈希算法
+                filename:
+                  type: string
+                  description: 文件名（可选，仅用于显示）
+      responses:
+        '200':
+          $ref: '#/components/responses/TextResult'
+
+components:
+  responses:
+    TextResult:
+      description: 操作成功（文本结果）
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              data:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: 结果文本
+
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: INVALID_INPUT
+            message:
+              type: string
+              example: Invalid input parameters

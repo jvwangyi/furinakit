@@ -39,3 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# runtime data (feedback, stats)
+/data/
+
+*storybook.log
+storybook-static
+
+tsconfig.tsbuildinfo
+
+# playwright
+test-results/
+
+# deployment scripts
+/scripts/
+
+# archived documentation
+/docs/archive/
