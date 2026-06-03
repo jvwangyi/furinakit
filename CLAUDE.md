@@ -292,3 +292,104 @@ node check_i18n.cjs    # 检查所有工具是否有翻译
 - 组件用 shadcn/ui 风格
 - 文件下载：存 blob URL 到 result，不要自动下载（浏览器会拦截）
 - 数组参数：FormData 中用 `JSON.stringify` 发送，后端自动 parse
+
+## 部署规范
+
+### 服务器环境要求
+- Node.js 22+
+- ffmpeg（音视频工具必须，`apt install ffmpeg` 或 `brew install ffmpeg`）
+- `/data/` 目录需要可写权限（stats、recent-tools、feedback 存这里）
+
+### basePath 逻辑
+- `next.config.ts` 中根据 `process.env.CI` 动态切换：
+  - CI 环境：`basePath: ''`（根路径）
+  - 生产环境：`basePath: '/furinakit'`
+- **新增路由/cookie 时必须跟随这个逻辑**，不能硬编码 `/furinakit`
+
+### Cookie path
+- `recent-tools` 等路由的 cookie `path` 必须和 basePath 一致
+- CI 环境 cookie path 为 `/`，生产环境为 `/furinakit`
+- 硬编码会导致 CI/E2E 环境 cookie 设不上，功能失效
+
+## i18n Key 命名规范
+
+| 前缀 | 用途 | 示例 |
+|------|------|------|
+| `tool.<name>` | 工具名称 | `tool.pdf-compress` |
+| `tool.<name>.desc` | 工具描述 | `tool.pdf-compress.desc` |
+| `opt.<name>` | 选项标签 | `opt.quality` |
+| `val.<name>` | 选项值 | `val.medium` |
+| `term.<name>` | 术语解释 | `term.floyd_steinberg` |
+
+**⚠️ 翻译里已经带了范围说明的，代码里不要再手动拼接：**
+- ✅ `"opt.quality": "质量 (1-100)"` → 代码写 `{t('opt.quality')}`
+- ❌ `{t('opt.quality')} (1-100)` → 会显示 "质量 (1-100) (1-100)"
+
+## API 路由维护注意
+
+### 文件大小限制
+- 文件上传路由需要校验文件大小，防止 OOM
+- 在 `api-utils.ts` 中统一加 `MAX_FILE_SIZE` 检查
+- 建议限制：图片 20MB、PDF 50MB、音视频 200MB
+
+### 并发写入保护
+- 写文件的路由（stats/recent-tools）并发时需要 mutex
+- `recent-tools` 已有 `writeLock` 实现，`stats` 还没有
+- 新增写文件路由时参考 `recent-tools` 的 mutex 模式
+
+### 临时文件清理
+- `createTempDir` 自带 5 分钟 `setTimeout` 清理
+- ffmpeg 长任务（超过 5 分钟）会被误删 → 加大超时或在 finally 中手动清理
+- 路由中用 `try/finally` 确保异常时也能清理
+
+## E2E 测试规范
+
+- 路径不要硬编码 `/furinakit/`，用 `playwright.config.ts` 的 `baseURL` 自动处理
+- `page.goto('/')` 而不是 `page.goto('/furinakit/')`
+- 文件类工具目前 E2E 没覆盖，新增文件工具时建议补上上传+下载的 E2E 用例
+
+## CLI 测试规范
+
+CLI 测试位于 `tests/cli/cli.test.ts`，使用 `exec` 调用 CLI 命令：
+
+```typescript
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+const CLI_PATH = path.join(__dirname, '../../cli/index.ts');
+
+// 测试示例
+it('should show help', async () => {
+  const { stdout } = await execAsync(`npx tsx ${CLI_PATH} --help`);
+  expect(stdout).toContain('FurinaKit');
+});
+```
+
+**注意事项：**
+- Windows 环境下 `echo '{"json":1}' | npx tsx ...` 会破坏 JSON（单引号问题）
+- 改用命令行参数传递输入：`npx tsx ${CLI_PATH} text hash -t "Hello World"`
+- 测试超时设置：`it('...', async () => { ... }, 30000)`
+
+## 测试覆盖统计
+
+| 组件 | 测试文件 | 测试用例 |
+|------|----------|----------|
+| 工具实现 | 62 个 | 346 个 |
+| E2E 测试 | 11 个 | 50 个 |
+| CLI 测试 | 1 个 | 14 个 |
+| Storybook | 15 个 | - |
+| **总计** | **89 个** | **410 个** |
+
+## 项目维护
+
+维护计划文档：`MAINTENANCE_PLAN.md`
+
+**定期检查项：**
+- 运行 `node check_i18n.cjs` 检查 i18n 完整性
+- 运行 `npm test` 确保所有测试通过
+- 运行 `npm run build` 确保构建成功
+- 检查 GitHub Actions CI 状态
+
+**GitHub 仓库：** https://github.com/jvwangyi/furinakit
+**在线体验：** http://8.130.38.139:9003/furinakit
