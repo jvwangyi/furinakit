@@ -11,8 +11,8 @@ export default defineConfig({
     headless: true,
   },
   webServer: {
-    command: 'npm run dev',
+    command: isCI ? 'npm run start' : 'npm run dev',
     port: 3000,
-    reuseExistingServer: true,
+    reuseExistingServer: !isCI,
   },
 });
