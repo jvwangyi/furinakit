@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': result.mimeType || 'audio/mpeg',
         'Content-Disposition': `attachment; filename="${result.filename || 'trimmed.mp3'}"`,
+        ...(result.progressId ? { 'X-Progress-Id': result.progressId } : {}),
       },
     });
   } catch (error) {

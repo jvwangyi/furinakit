@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': result.mimeType || 'video/mp4',
         'Content-Disposition': `attachment; filename="${result.filename || 'compressed.mp4'}"`,
+        ...(result.progressId ? { 'X-Progress-Id': result.progressId } : {}),
       },
     });
   } catch (error) {
