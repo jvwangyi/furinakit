@@ -4,49 +4,54 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
+import { withBasePath } from '@/lib/basePath';
+import { AuthButton } from '@/components/AuthButton';
 import {
-  LayoutDashboard,
   Users,
+  BarChart3,
   Wrench,
-  Shield,
+  Server,
+  ArrowLeft,
+  ShieldAlert,
 } from 'lucide-react';
 
 const navItems = [
-  { name: '数据总览', href: '/admin', icon: LayoutDashboard },
-  { name: '用户管理', href: '/admin/users', icon: Users },
-  { name: '工具管理', href: '/admin/tools', icon: Wrench },
+  { key: 'stats', href: '/admin/stats', icon: BarChart3 },
+  { key: 'users', href: '/admin/users', icon: Users },
+  { key: 'tools', href: '/admin/tools', icon: Wrench },
+  { key: 'system', href: '/admin/system', icon: Server },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const { t } = useI18n();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetch('/api/admin/stats')
+    fetch(withBasePath('/api/admin/stats'))
       .then((res) => {
-        if (res.ok) setAuthorized(true);
-        else setAuthorized(false);
+        setIsAdmin(res.ok);
       })
-      .catch(() => setAuthorized(false));
+      .catch(() => setIsAdmin(false));
   }, []);
 
-  if (authorized === null) {
+  if (isAdmin === null) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
-  if (!authorized) {
+  if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Shield className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h1 className="text-2xl font-bold mb-2">需要管理员权限</h1>
-          <p className="text-muted-foreground">请联系管理员获取访问权限</p>
-          <Link href="/" className="inline-block mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg">
-            返回首页
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <ShieldAlert className="h-16 w-16 text-destructive mx-auto" />
+          <h1 className="text-2xl font-bold">{t('admin.no_permission')}</h1>
+          <Link href="/" className="text-primary hover:underline inline-flex items-center gap-1">
+            <ArrowLeft className="h-4 w-4" /> {t('auth.back_home')}
           </Link>
         </div>
       </div>
@@ -54,50 +59,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Admin Sidebar */}
-      <aside className="w-56 border-r bg-card hidden lg:flex flex-col">
-        <div className="px-6 py-5 border-b">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            管理后台
-          </h2>
-        </div>
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="px-3 py-3 border-t">
-          <Link
-            href="/"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-          >
-            ← 返回前台
+    <div className="min-h-screen p-4 md:p-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-5 w-5" />
           </Link>
+          <h1 className="text-2xl font-bold">{t('admin.title')}</h1>
         </div>
-      </aside>
+        <AuthButton />
+      </div>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-        {children}
-      </main>
+      {/* Tab Navigation */}
+      <div className="flex gap-1 mb-6 border-b overflow-x-auto">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={cn(
+                'px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap',
+                isActive
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {t(`admin.${item.key}`)}
+            </Link>
+          );
+        })}
+      </div>
+
+      {children}
     </div>
   );
 }
