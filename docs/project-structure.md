@@ -1,8 +1,8 @@
 # FurinaKit 项目文件结构
 
-> 最后更新：2026-06-03
-> 工具数量：62 个
-> 测试数量：462 个（357 单元 + 91 E2E + 14 CLI）
+> 最后更新：2026-06-06
+> 工具数量：87 个
+> 测试数量：497 个（472 单元 + 11 E2E + 14 CLI）
 
 ---
 
@@ -499,6 +499,30 @@ src/app/
 | `video-trim.ts` | video | 视频裁剪 |
 | `xml-to-json.ts` | convert | XML 转 JSON |
 | `yaml-to-json.ts` | convert | YAML 转 JSON |
+| `ascii-art.ts` | dev | ASCII 艺术字生成 |
+| `barcode-gen.ts` | dev | 条形码生成 |
+| `business-card.ts` | craft | 电子名片生成 |
+| `code-minify.ts` | dev | 代码压缩混淆 |
+| `color-palette.ts` | dev | 调色板生成 |
+| `css-gradient.ts` | dev | CSS 渐变生成 |
+| `dns-lookup.ts` | dev | DNS 查询 |
+| `font-preview.ts` | dev | 字体预览 |
+| `gif-maker.ts` | image | GIF 动图制作 |
+| `image-add-text.ts` | image | 图片添加文字 |
+| `image-compare.ts` | image | 图片差异对比 |
+| `image-exif.ts` | image | EXIF 信息查看 |
+| `ip-lookup.ts` | dev | IP 地址查询 |
+| `json-schema-validate.ts` | dev | JSON Schema 校验 |
+| `markdown-live.ts` | text | Markdown 实时编辑 |
+| `openapi-viewer.ts` | dev | OpenAPI 文档查看 |
+| `pomodoro.ts` | craft | 番茄钟计时器 |
+| `ssl-checker.ts` | dev | SSL 证书检查 |
+| `svg-optimize.ts` | image | SVG 优化压缩 |
+| `text-crypto.ts` | text | 文本加密解密 |
+| `unit-converter.ts` | dev | 单位换算 |
+| `user-agent-parser.ts` | dev | UA 字符串解析 |
+| `video-thumbnail.ts` | video | 视频缩略图生成 |
+| `word-cloud.ts` | craft | 词云生成 |
 
 #### 核心模块
 
@@ -634,18 +658,18 @@ tests/
 
 | 类别 | 数量 |
 |------|------|
-| 工具实现 | 62 个（9 个分类） |
+| 工具实现 | 87 个（9 个分类） |
 | API 路由 | 66 个（62 工具 + 4 系统） |
 | React 组件 | 55 个 |
-| Storybook Stories | 15 个 |
-| 单元测试文件 | 63 个 |
-| 单元测试用例 | 357 个 |
+| Storybook Stories | 12 个 |
+| 单元测试文件 | 88 个 |
+| 单元测试用例 | 472 个 |
 | E2E 测试文件 | 11 个 |
-| E2E 测试用例 | 91 个 |
+| E2E 测试用例 | 11 个 |
 | CLI 测试用例 | 14 个 |
 | i18n 语言 | 4 种 |
 | 工具分类 | 9 个（pdf/image/text/video/audio/dev/convert/file/craft） |
 
 ---
 
-*本文档自动生成于 2026-06-03*
+*本文档更新于 2026-06-06*
