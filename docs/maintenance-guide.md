@@ -246,25 +246,72 @@ npx vitest run --coverage
 
 ## 文档同步
 
-### 需要同步的文档
+### 需要维护的文档清单
 
-| 文档 | 更新时机 |
-|------|----------|
-| `README.md` | 新增工具、功能变更 |
-| `CHANGELOG.md` | 每次版本发布 |
-| `docs/project-structure.md` | 新增文件、目录变更 |
-| `src/lib/locales/*.json` | 新增 UI 文本 |
+| 文档 | 更新时机 | 维护内容 |
+|------|----------|----------|
+| `README.md` | 新增工具、功能变更 | 工具数量、工具列表、功能说明、四语言同步 |
+| `CHANGELOG.md` | 每次版本发布 | 版本号、日期、Added/Changed/Fixed |
+| `CLAUDE.md` | 新增工具、规范变更 | 技术栈、命令、工具流程、编码规范 |
+| `CONTRIBUTING.md` | 贡献流程变更 | 贡献方式、开发环境、提交规范 |
+| `SECURITY.md` | 安全策略变更 | 漏洞报告、安全要点 |
+| `docs/development-guide.md` | 新增工具、开发流程变更 | 工具类型、代码示例、测试规范 |
+| `docs/maintenance-guide.md` | 维护流程变更 | 检查项、更新流程、文件维护 |
+| `docs/deployment-guide.md` | 部署流程变更 | 环境变量、CI/CD、Docker、Nginx |
+| `docs/usage-guide.md` | API 变更、功能变更 | Web/API/CLI 使用说明、路由列表 |
+| `docs/project-structure.md` | 新增文件、目录变更 | 完整目录结构、文件说明 |
+| `src/lib/locales/*.json` | 新增 UI 文本 | 四语言翻译（zh/en/ja/ko） |
+
+### 文档维护优先级
+
+| 优先级 | 文档 | 原因 |
+|--------|------|------|
+| P0 | `README.md` | 用户第一眼看到 |
+| P0 | `CHANGELOG.md` | 版本记录必须准确 |
+| P0 | `src/lib/locales/*.json` | 影响用户体验 |
+| P1 | `CLAUDE.md` | AI 开发规范 |
+| P1 | `docs/development-guide.md` | 开发者参考 |
+| P1 | `docs/project-structure.md` | 项目结构参考 |
+| P2 | `CONTRIBUTING.md` | 贡献者参考 |
+| P2 | `docs/usage-guide.md` | 用户使用参考 |
+| P2 | `docs/deployment-guide.md` | 部署参考 |
+| P2 | `docs/maintenance-guide.md` | 维护者参考 |
+| P3 | `SECURITY.md` | 安全策略 |
 
 ### README.md 更新
 
+**何时更新**：
+- 新增工具
+- 工具数量变更
+- 功能特性变更
+- 测试数量变更
+
+**更新内容**：
 - 工具数量：统计 `src/lib/tools/*.ts` 文件数
 - 测试数量：运行 `npx vitest run` 查看
 - 工具列表：按分类添加新工具
+- 四语言同步：zh/en/ja/ko 都需要更新
+
+**检查命令**：
+```bash
+# 统计工具数量
+ls src/lib/tools/*.ts | grep -v index | wc -l
+
+# 统计测试数量
+npx vitest run 2>&1 | grep "Tests" | tail -1
+
+# 检查 i18n 完整性
+node scripts/check_i18n.cjs
+```
 
 ### CHANGELOG.md 更新
 
-格式：
+**何时更新**：
+- 每次版本发布
+- 重大功能变更
+- 重要 Bug 修复
 
+**格式**：
 ```markdown
 ## [版本号] - YYYY-MM-DD
 
@@ -276,16 +323,154 @@ npx vitest run --coverage
 
 ### Fixed
 - 修复内容
+
+### Security
+- 安全修复
 ```
 
-### i18n 同步
+**版本号规则**：
+- 主版本号：破坏性变更
+- 次版本号：新功能
+- 修订号：Bug 修复
 
-新增 UI 文本时，必须在 4 个语言文件中都添加：
+### CLAUDE.md 更新
 
+**何时更新**：
+- 新增工具类型
+- 编码规范变更
+- 安全要点变更
+- 命令变更
+
+**更新内容**：
+- 技术栈：新增依赖
+- 常用命令：新增命令
+- 新增工具流程：流程变更
+- 编码规范：规范变更
+- 安全要点：安全要求变更
+
+### docs/project-structure.md 更新
+
+**何时更新**：
+- 新增目录
+- 新增文件
+- 目录结构变更
+- 文件用途变更
+
+**更新内容**：
+- 目录树结构
+- 文件说明表格
+- 统计数据
+
+**检查命令**：
 ```bash
-# 检查完整性
+# 检查新增文件
+git status --short
+
+# 检查目录结构
+find . -maxdepth 2 -type d | grep -v node_modules | grep -v .git | sort
+```
+
+### docs/development-guide.md 更新
+
+**何时更新**：
+- 新增工具类型
+- 开发流程变更
+- 代码示例变更
+- 测试规范变更
+
+**更新内容**：
+- 工具类型表格
+- 开发流程步骤
+- 代码示例
+- 测试模板
+
+### docs/maintenance-guide.md 更新
+
+**何时更新**：
+- 维护流程变更
+- 检查项变更
+- 文件维护规范变更
+
+**更新内容**：
+- 定期检查项
+- 杂项文件维护
+- 依赖更新流程
+- 文档同步规范
+
+### docs/deployment-guide.md 更新
+
+**何时更新**：
+- 环境变量变更
+- CI/CD 流程变更
+- Docker 配置变更
+- Nginx 配置变更
+
+**更新内容**：
+- 环境变量列表
+- 部署流程
+- Docker 配置
+- Nginx 配置
+
+### docs/usage-guide.md 更新
+
+**何时更新**：
+- 新增 API 路由
+- API 变更
+- CLI 命令变更
+- 功能特性变更
+
+**更新内容**：
+- API 路由列表
+- 请求/响应格式
+- CLI 命令列表
+- 示例代码
+
+### src/lib/locales/*.json 更新
+
+**何时更新**：
+- 新增 UI 文本
+- 翻译修正
+
+**更新内容**：
+- 四语言文件同步更新
+- Key 命名规范：`tool.<name>`, `opt.<name>`, `val.<name>`
+
+**检查命令**：
+```bash
+# 检查 i18n 完整性
 node scripts/check_i18n.cjs
 ```
+
+### 文档同步检查清单
+
+#### 新增工具时
+
+- [ ] `src/lib/locales/*.json` 添加四语言翻译
+- [ ] `README.md` 更新工具数量和工具列表
+- [ ] `docs/project-structure.md` 更新目录结构
+- [ ] `docs/development-guide.md` 更新代码示例（如有新类型）
+- [ ] `docs/usage-guide.md` 更新 API 路由列表
+- [ ] `CHANGELOG.md` 记录新增工具
+
+#### 修改功能时
+
+- [ ] `CHANGELOG.md` 记录变更
+- [ ] `README.md` 更新功能说明（如有）
+- [ ] `docs/usage-guide.md` 更新使用说明（如有）
+- [ ] `CLAUDE.md` 更新规范（如有）
+
+#### 修改部署时
+
+- [ ] `docs/deployment-guide.md` 更新部署流程
+- [ ] `.env.example` 更新环境变量示例
+- [ ] `Dockerfile` 更新构建配置（如有）
+- [ ] `docker-compose.yml` 更新编排配置（如有）
+
+#### 修改安全策略时
+
+- [ ] `SECURITY.md` 更新安全策略
+- [ ] `CLAUDE.md` 更新安全要点
+- [ ] `docs/maintenance-guide.md` 更新安全审计流程
 
 ---
 
