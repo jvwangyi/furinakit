@@ -560,6 +560,30 @@ src/app/
 
 ---
 
+### `src/generated/` — 生成代码（gitignore）
+
+```
+src/generated/
+└── prisma/                     # Prisma Client 生成代码
+    ├── browser.ts              # 浏览器端 Client
+    ├── client.ts               # Node.js Client
+    ├── commonInputTypes.ts     # 通用输入类型
+    ├── enums.ts                # 枚举定义
+    ├── index.ts                # 入口文件
+    ├── internal/               # 内部实现
+    └── models/                 # 数据模型
+        ├── Account.ts
+        ├── Favorite.ts
+        ├── Session.ts
+        ├── ToolUsageHistory.ts
+        ├── User.ts
+        └── VerificationToken.ts
+```
+
+> 由 `npx prisma generate` 自动生成，不提交到 git
+
+---
+
 ### `src/lib/` — 核心库
 
 #### 工具实现 (`tools/`)
