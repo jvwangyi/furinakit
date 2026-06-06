@@ -7,6 +7,7 @@
 | `docs/development-guide.md` | 详细开发流程、代码示例、测试规范 |
 | `docs/maintenance-guide.md` | 维护流程、依赖更新、文档同步 |
 | `docs/deployment-guide.md` | 环境配置、CI/CD、Docker 部署 |
+| `docs/usage-guide.md` | 使用指南（Web/API/CLI） |
 | `docs/project-structure.md` | 完整项目结构 |
 
 ## 技术栈
