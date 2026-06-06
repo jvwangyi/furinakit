@@ -60,6 +60,12 @@ test-results/
 # CodeGraph MCP index
 /.codegraph/
 
+# Temporary planning files
+/findings.md
+/progress.md
+/task_plan.md
+/AGENTS.md
+
 # Prisma
 prisma/dev.db
 prisma/dev.db-journal
