@@ -60,30 +60,86 @@ furinakit/
 
 ### 根目录文件说明
 
+#### 项目文档
+
+| 文件 | 用途 |
+|------|------|
+| `README.md` | 项目文档，包含中文/English/日本語/한국어 四语言 |
+| `CHANGELOG.md` | 版本更新记录 |
+| `CONTRIBUTING.md` | 如何参与项目开发 |
+| `CODE_OF_CONDUCT.md` | Contributor Covenant 行为准则 |
+| `SECURITY.md` | 安全漏洞报告指南 |
+| `LICENSE` | MIT 开源许可证 |
+
+#### AI/开发工具配置
+
+| 文件 | 用途 |
+|------|------|
+| `CLAUDE.md` | Claude Code 开发指南：工具开发流程、编码规范、安全要点 |
+| `AGENTS.md` | Next.js 16 Agent 规则（自动生成，gitignore） |
+| `skills-lock.json` | Claude Skills 版本锁定 |
+
+#### 环境配置
+
 | 文件 | 用途 |
 |------|------|
 | `.env` | 环境变量（不提交到 git） |
 | `.env.example` | 环境变量示例 |
 | `.env.local` | 本地环境变量（不提交到 git） |
-| `AGENTS.md` | Next.js 16 Agent 规则（自动生成，gitignore） |
-| `CHANGELOG.md` | 版本更新记录 |
-| `CLAUDE.md` | AI 开发指南：工具开发流程、编码规范、安全要点 |
-| `CODE_OF_CONDUCT.md` | Contributor Covenant 行为准则 |
-| `CONTRIBUTING.md` | 如何参与项目开发 |
-| `Dockerfile` | Docker 构建文件（Node.js 22） |
-| `LICENSE` | MIT 开源许可证 |
-| `README.md` | 项目文档，包含中文/English/日本語/한국어 四语言 |
-| `SECURITY.md` | 安全漏洞报告指南 |
-| `components.json` | shadcn/ui 组件库配置（主题、路径别名） |
-| `docker-compose.yml` | Docker 编排配置 |
-| `eslint.config.mjs` | ESLint 代码规范配置 |
+
+#### 构建工具配置
+
+| 文件 | 用途 |
+|------|------|
+| `package.json` | 项目配置、依赖、脚本 |
+| `package-lock.json` | 依赖版本锁定 |
+| `tsconfig.json` | TypeScript 编译选项、路径别名 `@/` → `src/` |
 | `next.config.ts` | Next.js 配置：CI 环境 basePath 为空，生产为 `/furinakit` |
+| `vitest.config.mts` | Vitest 单元测试配置 |
 | `playwright.config.ts` | Playwright E2E 测试配置 |
+| `eslint.config.mjs` | ESLint 代码规范配置 |
 | `postcss.config.mjs` | PostCSS CSS 处理插件配置 |
 | `prisma.config.ts` | Prisma 数据库配置 |
-| `skills-lock.json` | Claude Skills 版本锁定 |
-| `tsconfig.json` | TypeScript 编译选项、路径别名 `@/` → `src/` |
-| `vitest.config.mts` | Vitest 单元测试配置 |
+| `components.json` | shadcn/ui 组件库配置（主题、路径别名） |
+
+#### Docker 配置
+
+| 文件 | 用途 |
+|------|------|
+| `Dockerfile` | Docker 构建文件（Node.js 22） |
+| `docker-compose.yml` | Docker 编排配置 |
+| `.dockerignore` | Docker 忽略规则 |
+
+#### Git 配置
+
+| 文件 | 用途 |
+|------|------|
+| `.gitignore` | Git 忽略规则 |
+
+---
+
+## `.claude/` — Claude Code 配置
+
+```
+.claude/
+├── settings.local.json         # Claude Code 本地设置
+└── skills/                     # Claude Skills
+    └── shadcn/                 # shadcn/ui 技能
+        ├── SKILL.md            # 技能说明
+        ├── cli.md              # CLI 使用指南
+        ├── customization.md    # 自定义指南
+        ├── mcp.md              # MCP 集成
+        ├── registry.md         # 组件注册
+        ├── agents/             # Agent 配置
+        ├── assets/             # 资源文件
+        ├── evals/              # 评估配置
+        └── rules/              # 规则文件
+```
+
+| 文件 | 用途 |
+|------|------|
+| `settings.local.json` | Claude Code 本地设置（不提交到 git） |
+| `skills/shadcn/` | shadcn/ui 组件库技能配置 |
 
 ---
 
@@ -159,7 +215,8 @@ docs/
 ├── deployment-guide.md         # 部署指南
 ├── development-guide.md        # 开发指南
 ├── maintenance-guide.md        # 维护指南
-└── project-structure.md        # 项目结构说明（本文件）
+├── project-structure.md        # 项目结构说明（本文件）
+└── usage-guide.md              # 使用指南（Web/API/CLI）
 ```
 
 ---
