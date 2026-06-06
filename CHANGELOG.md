@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-06-06
+
+### Fixed
+- 修复 CI 构建失败：Google Fonts CDN 无法访问导致 build 失败
+- 修复 Node.js 20 弃用警告：添加 FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 环境变量
+
+### Changed
+- 字体加载从 `next/font/google` 改为本地 `geist` 字体包，构建不再依赖外部网络
+- `src/lib/auth.ts` 和 `src/lib/error-monitor.ts` 中的 console 调用改为 pino logger
+
+### Added
+- 新增 7 个工具的单元测试：ascii-art、business-card、image-add-text、ip-lookup、perler-beads、pomodoro、word-cloud
+- 注册遗漏的 ip-lookup 工具到 tools/index.ts
+
 ## [0.1.0] - 2026-06-03
 
 ### Added

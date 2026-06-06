@@ -1,7 +1,7 @@
 # FurinaKit 开发规范
 
 ## 技术栈
-Next.js 16 + TypeScript + Tailwind CSS + Prisma + shadcn/ui + pino（日志）
+Next.js 16 + TypeScript + Tailwind CSS + Prisma + shadcn/ui + pino（日志）+ geist（字体）
 
 ## 常用命令
 | 命令 | 用途 |
@@ -32,13 +32,13 @@ Next.js 16 + TypeScript + Tailwind CSS + Prisma + shadcn/ui + pino（日志）
 
 ## 新增工具流程
 1. 在 `src/lib/tools/` 下创建工具实现（定义 inputSchema + execute）
-2. 在 `src/lib/registry.ts` 中注册
+2. 在 `src/lib/tools/index.ts` 中导入注册
 3. 在 `src/app/api/[category]/[tool]/route.ts` 创建 API 路由（使用 createToolRoute）
 4. 在 `src/app/[category]/[tool]/page.tsx` 创建前端页面（复用 ToolPageContainer）
 5. 在 `src/components/tools/ToolOptions.tsx` 添加工具选项（如有）
 6. 在 `src/lib/locales/zh.json` 添加翻译 key（tool.xxx、opt.xxx、val.xxx）
 7. 同步翻译到 en.json、ja.json、ko.json
-8. 添加单元测试 `tests/`
+8. 添加单元测试 `tests/tools/<tool-name>.test.ts`
 9. 运行 `npx tsc --noEmit && npx vitest run` 验证
 
 ## 编码规范
