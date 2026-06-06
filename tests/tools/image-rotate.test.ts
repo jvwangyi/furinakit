@@ -51,4 +51,39 @@ describe('image-rotate tool', () => {
 
     expect(result.data).toBeInstanceOf(Buffer)
   })
+
+  describe('batch mode', () => {
+    it('should rotate multiple files in batch mode', async () => {
+      const images = [await createTestImage(), await createTestImage(), await createTestImage()]
+      const result = await tool!.execute({ files: images, angle: 90 })
+
+      expect(result.text).toBeDefined()
+      const batch = JSON.parse(result.text!)
+      expect(batch.batch).toBe(true)
+      expect(batch.total).toBe(3)
+      expect(batch.success).toBe(3)
+      expect(batch.failed).toBe(0)
+      expect(batch.results).toHaveLength(3)
+      batch.results.forEach((r: any) => {
+        expect(r.mimeType).toBe('image/png')
+        expect(typeof r.data).toBe('string')
+      })
+    })
+
+    it('should return single-file result for single item array', async () => {
+      const image = await createTestImage()
+      const result = await tool!.execute({ files: [image], angle: 90 })
+
+      expect(result.data).toBeInstanceOf(Buffer)
+    })
+
+    it('should handle batch with flip option', async () => {
+      const images = [await createTestImage(), await createTestImage()]
+      const result = await tool!.execute({ files: images, angle: 0, flip: 'horizontal' })
+
+      const batch = JSON.parse(result.text!)
+      expect(batch.success).toBe(2)
+      expect(batch.results).toHaveLength(2)
+    })
+  })
 })

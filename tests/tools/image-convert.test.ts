@@ -61,4 +61,47 @@ describe('image-convert tool', () => {
     // Low quality should produce smaller file
     expect((lowQ.data as Buffer).length).toBeLessThanOrEqual((highQ.data as Buffer).length)
   })
+
+  describe('batch mode', () => {
+    it('should convert multiple files in batch mode', async () => {
+      const images = [await createTestImage('png'), await createTestImage('png'), await createTestImage('png')]
+      const result = await tool!.execute({ files: images, format: 'jpeg' })
+
+      expect(result.text).toBeDefined()
+      const batch = JSON.parse(result.text!)
+      expect(batch.batch).toBe(true)
+      expect(batch.total).toBe(3)
+      expect(batch.success).toBe(3)
+      expect(batch.failed).toBe(0)
+      expect(batch.results).toHaveLength(3)
+      batch.results.forEach((r: any) => {
+        expect(r.mimeType).toBe('image/jpeg')
+        expect(r.filename).toBe('converted.jpeg')
+        expect(typeof r.data).toBe('string')
+      })
+    })
+
+    it('should return single-file result for single item array', async () => {
+      const image = await createTestImage('png')
+      const result = await tool!.execute({ files: [image], format: 'jpeg' })
+
+      // Single file in array should still return as single-file mode
+      expect(result.data).toBeInstanceOf(Buffer)
+      expect(result.mimeType).toBe('image/jpeg')
+    })
+
+    it('should report errors in batch mode', async () => {
+      const validImage = await createTestImage('png')
+      const invalidBuffer = Buffer.from('not an image')
+
+      const result = await tool!.execute({ files: [validImage, invalidBuffer, validImage], format: 'jpeg' })
+
+      const batch = JSON.parse(result.text!)
+      expect(batch.total).toBe(3)
+      expect(batch.success).toBe(2)
+      expect(batch.failed).toBe(1)
+      expect(batch.errors).toHaveLength(1)
+      expect(batch.errors[0].index).toBe(1)
+    })
+  })
 })
