@@ -13,6 +13,8 @@ export interface ToolResult {
   text?: string;
   mimeType?: string;
   filename?: string;
+  /** Progress tracking ID for long-running operations */
+  progressId?: string;
 }
 
 /** Full tool definition with schema and execute function */
