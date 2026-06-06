@@ -125,92 +125,16 @@ test(hash): add SHA-512 test cases
 
 ## 添加新工具
 
-### 步骤 1: 确定工具类型
+详细的开发流程和代码示例请参考 [`CLAUDE.md`](CLAUDE.md) 中的「新增工具流程」章节。
 
-| 类型 | 前端发送 | API 接收 |
-|------|----------|----------|
-| 文本工具 | JSON | `application/json` |
-| 单文件工具 | FormData | `file` key |
-| 多文件工具 | FormData | `files` key |
+**简要步骤：**
 
-### 步骤 2: 实现工具
-
-创建 `src/lib/tools/<tool-name>.ts`：
-
-```typescript
-import { z } from 'zod';
-import { Tool, ToolResult, register } from '../registry';
-
-const inputSchema = z.object({
-  // 定义输入参数
-});
-
-const tool: Tool = {
-  name: '<tool-name>',
-  description: '工具描述',
-  category: '<category>',
-  inputSchema,
-  execute: async (input): Promise<ToolResult> => {
-    const params = inputSchema.parse(input);
-    // 实现逻辑
-    return { data: result, mimeType: '...', filename: '...' };
-  },
-};
-
-register(tool);
-export default tool;
-```
-
-### 步骤 3: 创建 API 路由
-
-创建 `src/app/api/<category>/<tool-name>/route.ts`：
-
-```typescript
-import { createToolRoute } from '@/lib/api-utils';
-export const POST = createToolRoute('<tool-name>', { validate: true });
-```
-
-### 步骤 4: 注册工具
-
-在 `src/lib/tools/index.ts` 中添加：
-
-```typescript
-import './<tool-name>';
-```
-
-### 步骤 5: 添加 i18n 翻译
-
-在 4 个语言文件中添加：
-
-```json
-{
-  "tool.<name>": "工具名称",
-  "tool.<name>.desc": "工具描述"
-}
-```
-
-### 步骤 6: 编写测试
-
-创建 `tests/tools/<tool-name>.test.ts`：
-
-```typescript
-import { describe, it, expect } from 'vitest';
-import '@/lib/tools';
-import { getTool } from '@/lib/registry';
-
-describe('<tool-name> tool', () => {
-  const tool = getTool('<tool-name>');
-
-  it('should be registered', () => {
-    expect(tool).toBeDefined();
-  });
-
-  it('should process input correctly', async () => {
-    const result = await tool!.execute({ /* 测试输入 */ });
-    expect(result.data).toBeDefined();
-  });
-});
-```
+1. 实现工具：`src/lib/tools/<name>.ts`
+2. 注册工具：`src/lib/tools/index.ts`
+3. 创建 API 路由：`src/app/api/<category>/<name>/route.ts`
+4. 添加 i18n 翻译：`src/lib/locales/*.json`（4 个语言文件）
+5. 编写测试：`tests/tools/<name>.test.ts`
+6. 验证：`npx tsc --noEmit && npx vitest run`
 
 ---
 
