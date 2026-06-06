@@ -5,11 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ToolCard } from '@/components/tools/ToolCard';
 import { RecentTools } from '@/components/tools/RecentTools';
+import { FavoritesSection } from '@/components/tools/FavoritesSection';
 import { Search } from 'lucide-react';
+import { AuthButton } from '@/components/AuthButton';
 import { apiPath } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
 import { categoryKeys } from '@/lib/constants';
 import { withBasePath } from '@/lib/basePath';
+import { useFavorites } from '@/lib/hooks/useFavorites';
 import type { ToolInfo } from '@/types/tool';
 
 export default function HomePage() {
@@ -19,6 +22,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const searchRef = useRef<HTMLInputElement>(null);
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
   // Global keyboard shortcuts for search
   useEffect(() => {
@@ -79,13 +83,16 @@ export default function HomePage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-border/50">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="relative p-4 sm:p-6 lg:p-8 pb-6 max-w-7xl mx-auto">
-          <div className="flex items-center gap-4 mb-3">
-            <img src={withBasePath("/furina.jpg")} alt="FurinaKit" className="h-14 w-14 rounded-2xl object-cover ring-2 ring-primary/20 shadow-lg" />
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-balance">FurinaKit</h1>
-              <p className="text-sm text-muted-foreground">{t('site.subtitle')}</p>
+        <div className="relative p-4 sm:p-6 lg:p-8 pb-6">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-4">
+              <img src={withBasePath("/furina.jpg")} alt="FurinaKit" className="h-14 w-14 rounded-2xl object-cover ring-2 ring-primary/20 shadow-lg" />
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-balance">FurinaKit</h1>
+                <p className="text-sm text-muted-foreground">{t('site.subtitle')}</p>
+              </div>
             </div>
+            <AuthButton />
           </div>
           <p className="text-muted-foreground max-w-2xl mt-2 text-sm sm:text-base">
             {t('site.description')}
@@ -93,9 +100,17 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8">
         {/* Recent Tools */}
         <RecentTools />
+
+        {/* Favorites */}
+        <FavoritesSection
+          favorites={favorites}
+          tools={tools}
+          onRemove={toggleFavorite}
+        />
+
 
         {/* Search & Filter */}
         <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-6">
@@ -150,6 +165,8 @@ export default function HomePage() {
                 name={tool.name}
                 description={tool.description}
                 category={tool.category}
+                isFavorite={isFavorite(tool.name)}
+                onToggleFavorite={toggleFavorite}
               />
             ))}
           </div>

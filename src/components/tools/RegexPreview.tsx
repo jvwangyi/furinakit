@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useI18n } from '@/lib/i18n';
 
 interface RegexMatch {
   text: string;
@@ -15,6 +16,7 @@ interface RegexPreviewProps {
 }
 
 export function RegexPreview({ text, pattern, flags = 'g' }: RegexPreviewProps) {
+  const { t } = useI18n();
   const { matches, error } = useMemo(() => {
     if (!pattern || !text) return { matches: [], error: null };
     try {
@@ -41,7 +43,7 @@ export function RegexPreview({ text, pattern, flags = 'g' }: RegexPreviewProps) 
   if (error) {
     return (
       <div className="p-3.5 bg-red-50/80 dark:bg-red-950/30 border border-red-200/60 dark:border-red-800/30 rounded-lg text-sm text-red-700 dark:text-red-300">
-        正则错误: {error}
+        {t('regex_preview.error')}: {error}
       </div>
     );
   }
@@ -51,7 +53,7 @@ export function RegexPreview({ text, pattern, flags = 'g' }: RegexPreviewProps) 
   if (matches.length === 0) {
     return (
       <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-        没有匹配结果
+        {t('regex_preview.no_match')}
       </div>
     );
   }
@@ -73,8 +75,8 @@ export function RegexPreview({ text, pattern, flags = 'g' }: RegexPreviewProps) 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">找到 {matches.length} 个匹配</span>
-        {matches.length >= 100 && <span className="text-orange-500">（已截断，最多显示 100 个）</span>}
+        <span className="font-medium text-foreground">{t('regex_preview.found')} {matches.length} {t('regex_preview.matches')}</span>
+        {matches.length >= 100 && <span className="text-orange-500">{t('regex_preview.truncated')}</span>}
       </div>
 
       {/* Highlighted text */}
@@ -84,7 +86,7 @@ export function RegexPreview({ text, pattern, flags = 'g' }: RegexPreviewProps) 
             <mark
               key={i}
               className="bg-yellow-200 dark:bg-yellow-800/50 text-foreground rounded px-0.5"
-              title={`匹配 #${(part.matchIndex ?? 0) + 1}`}
+              title={`${t('regex_preview.match_number')} #${(part.matchIndex ?? 0) + 1}`}
             >
               {part.text}
             </mark>
@@ -100,17 +102,17 @@ export function RegexPreview({ text, pattern, flags = 'g' }: RegexPreviewProps) 
           <div key={i} className="flex items-center gap-3 px-3 py-1.5 bg-muted/30 rounded text-xs font-mono">
             <span className="text-muted-foreground w-8 text-right">#{i + 1}</span>
             <span className="flex-1 truncate">"{m.text}"</span>
-            <span className="text-muted-foreground">位置 {m.index}</span>
+            <span className="text-muted-foreground">{t('regex_preview.position')} {m.index}</span>
             {m.groups && m.groups.length > 0 && (
               <span className="text-muted-foreground">
-                组: {m.groups.map((g, j) => `$${j + 1}="${g}"`).join(', ')}
+                {t('regex_preview.group')}: {m.groups.map((g, j) => `$${j + 1}="${g}"`).join(', ')}
               </span>
             )}
           </div>
         ))}
         {matches.length > 20 && (
           <div className="text-xs text-muted-foreground px-3">
-            还有 {matches.length - 20} 个匹配未显示...
+            {t('regex_preview.more_matches_prefix')} {matches.length - 20} {t('regex_preview.more_matches_suffix')}
           </div>
         )}
       </div>

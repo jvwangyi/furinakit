@@ -4,9 +4,11 @@ import { useTheme } from '@/components/ThemeProvider';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon, Monitor } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { useI18n } from '@/lib/i18n';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const { t } = useI18n();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const cycle = useCallback(() => {
@@ -34,9 +36,9 @@ export function ThemeToggle() {
   };
 
   const labels = {
-    light: '亮色',
-    dark: '暗色',
-    system: '跟随系统',
+    light: t('theme.light'),
+    dark: t('theme.dark'),
+    system: t('theme.system'),
   };
 
   return (
@@ -45,7 +47,7 @@ export function ThemeToggle() {
       size="icon"
       onClick={cycle}
       title={labels[theme]}
-      aria-label={`切换主题: ${labels[theme]}`}
+      aria-label={`${t('theme.switch_prefix')}${labels[theme]}`}
       className="text-sidebar-foreground hover:text-sidebar-accent-foreground"
     >
       <span

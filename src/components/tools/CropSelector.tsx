@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 import { Label } from '@/components/ui/label';
 import { RotateCcw } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 
 interface Area {
   x: number;
@@ -18,6 +19,7 @@ interface CropSelectorProps {
 }
 
 export function CropSelector({ imageSrc, onCropChange }: CropSelectorProps) {
+  const { t } = useI18n();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [targetW, setTargetW] = useState<number>(1);
@@ -80,7 +82,7 @@ export function CropSelector({ imageSrc, onCropChange }: CropSelectorProps) {
   };
 
   const presets = [
-    { label: '自由', w: 0, h: 0 },
+    { label: t('crop.free'), w: 0, h: 0 },
     { label: '1:1', w: 1, h: 1 },
     { label: '4:3', w: 4, h: 3 },
     { label: '3:4', w: 3, h: 4 },
@@ -90,9 +92,9 @@ export function CropSelector({ imageSrc, onCropChange }: CropSelectorProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-xs text-muted-foreground">拖拽移动，滚轮/滑条缩放</Label>
+        <Label className="text-xs text-muted-foreground">{t('crop.drag_hint')}</Label>
         <button type="button" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" onClick={handleReset}>
-          <RotateCcw className="h-3 w-3" /> 重置
+          <RotateCcw className="h-3 w-3" /> {t('crop.reset')}
         </button>
       </div>
 
@@ -124,11 +126,11 @@ export function CropSelector({ imageSrc, onCropChange }: CropSelectorProps) {
 
       {/* 自定义像素 */}
       <div className="flex items-center gap-2">
-        <Label className="text-xs text-muted-foreground whitespace-nowrap">裁剪尺寸</Label>
+        <Label className="text-xs text-muted-foreground whitespace-nowrap">{t('crop.size')}</Label>
         <input
           type="number"
           min={10}
-          placeholder="宽"
+          placeholder={t('crop.width')}
           value={targetW || ''}
           onChange={(e) => handleTargetChange('w', e.target.value)}
           className="w-20 h-7 text-xs rounded border border-input bg-background px-2"
@@ -137,7 +139,7 @@ export function CropSelector({ imageSrc, onCropChange }: CropSelectorProps) {
         <input
           type="number"
           min={10}
-          placeholder="高"
+          placeholder={t('crop.height')}
           value={targetH || ''}
           onChange={(e) => handleTargetChange('h', e.target.value)}
           className="w-20 h-7 text-xs rounded border border-input bg-background px-2"
@@ -148,9 +150,9 @@ export function CropSelector({ imageSrc, onCropChange }: CropSelectorProps) {
       {/* 当前裁剪尺寸 */}
       {cropPixels && (
         <div className="text-xs text-muted-foreground">
-          当前：{Math.round(cropPixels.width)} × {Math.round(cropPixels.height)} px
+          {t('crop.current')}: {Math.round(cropPixels.width)} × {Math.round(cropPixels.height)} px
           {naturalSize.w > 0 && (
-            <span className="ml-2">原图：{naturalSize.w} × {naturalSize.h}</span>
+            <span className="ml-2">{t('crop.original')}: {naturalSize.w} × {naturalSize.h}</span>
           )}
         </div>
       )}
@@ -173,7 +175,7 @@ export function CropSelector({ imageSrc, onCropChange }: CropSelectorProps) {
 
       {/* 图片缩放 */}
       <div className="flex items-center gap-3">
-        <Label className="text-xs whitespace-nowrap text-muted-foreground w-14">缩放</Label>
+        <Label className="text-xs whitespace-nowrap text-muted-foreground w-14">{t('crop.zoom')}</Label>
         <input type="range" min={1} max={5} step={0.1} value={zoom} onChange={(e) => setZoom(parseFloat(e.target.value))} className="flex-1 h-1.5" />
         <span className="text-xs text-muted-foreground w-10 text-right">{zoom.toFixed(1)}x</span>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { SessionProvider } from 'next-auth/react';
 import { I18nProvider } from '@/lib/i18n';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/ui/sonner';
@@ -12,13 +13,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     reportWebVitals();
   }, []);
   return (
-    <I18nProvider>
-      <ThemeProvider>
-        <TooltipProvider>
-          {children}
-          <Toaster />
-        </TooltipProvider>
-      </ThemeProvider>
-    </I18nProvider>
+    <SessionProvider basePath="/furinakit/api/auth">
+      <I18nProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            {children}
+            <Toaster />
+          </TooltipProvider>
+        </ThemeProvider>
+      </I18nProvider>
+    </SessionProvider>
   );
 }

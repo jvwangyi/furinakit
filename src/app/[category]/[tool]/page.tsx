@@ -7,6 +7,8 @@ import { useI18n } from '@/lib/i18n';
 import { useToolBreadcrumb } from '@/components/layout/Breadcrumb';
 import { ToolPageContainer } from '@/components/tools/ToolPageContainer';
 import { PerlerBeadsClient } from './perler-client';
+import { PomodoroClient } from './pomodoro-client';
+import { BusinessCardClient } from './business-card-client';
 import type { ToolInfo } from '@/types/tool';
 
 export default function ToolPage() {
@@ -32,11 +34,27 @@ export default function ToolPage() {
       .finally(() => setLoading(false));
   }, [toolName]);
 
-  // PerlerBeads has its own client component
+  // Tools with their own client components
   if (toolName === 'perler-beads') {
     return (
       <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
         <PerlerBeadsClient />
+      </div>
+    );
+  }
+
+  if (toolName === 'pomodoro') {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+        <PomodoroClient />
+      </div>
+    );
+  }
+
+  if (toolName === 'business-card') {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+        <BusinessCardClient />
       </div>
     );
   }

@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 
 export function BackToTop() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export function BackToTop() {
         visible ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'
       }`}
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      aria-label="返回顶部"
+      aria-label={t('aria.back_to_top')}
     >
       <ArrowUp className="h-4 w-4" />
     </Button>

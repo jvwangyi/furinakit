@@ -7,12 +7,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Star, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiPath } from '@/lib/utils';
+import { useI18n } from '@/lib/i18n';
 
 interface FeedbackFormProps {
   toolName: string;
 }
 
 export function FeedbackForm({ toolName }: FeedbackFormProps) {
+  const { t } = useI18n();
   const [rating, setRating] = useState<number>(0);
   const [hoveredRating, setHoveredRating] = useState<number>(0);
   const [comment, setComment] = useState('');
@@ -37,9 +39,9 @@ export function FeedbackForm({ toolName }: FeedbackFormProps) {
       if (!res.ok) throw new Error('Failed to submit feedback');
 
       setSubmitted(true);
-      toast.success('感谢您的反馈！');
+      toast.success(t('feedback.success'));
     } catch {
-      toast.error('提交失败，请稍后再试');
+      toast.error(t('feedback.error'));
     } finally {
       setSubmitting(false);
     }
@@ -50,7 +52,7 @@ export function FeedbackForm({ toolName }: FeedbackFormProps) {
       <Card className="bg-muted/30 border-dashed">
         <CardContent className="p-4 sm:p-6 flex items-center justify-center gap-2 text-muted-foreground">
           <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <span className="text-sm">感谢您的反馈！</span>
+          <span className="text-sm">{t('feedback.thanks')}</span>
         </CardContent>
       </Card>
     );
@@ -60,7 +62,7 @@ export function FeedbackForm({ toolName }: FeedbackFormProps) {
     <Card className="bg-muted/30 border-dashed">
       <CardContent className="p-4 sm:p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">这个工具有帮助吗？</span>
+          <span className="text-sm text-muted-foreground">{t('feedback.question')}</span>
           <div className="flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
@@ -86,7 +88,7 @@ export function FeedbackForm({ toolName }: FeedbackFormProps) {
         {rating > 0 && (
           <>
             <Textarea
-              placeholder="可选：留下您的建议或评论..."
+              placeholder={t('feedback.placeholder')}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={2}
@@ -99,11 +101,11 @@ export function FeedbackForm({ toolName }: FeedbackFormProps) {
               className="w-full"
             >
               {submitting ? (
-                '提交中...'
+                t('feedback.submitting')
               ) : (
                 <>
                   <Send className="h-3.5 w-3.5 mr-1.5" />
-                  提交反馈
+                  {t('feedback.submit')}
                 </>
               )}
             </Button>

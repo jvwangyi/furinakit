@@ -536,8 +536,32 @@ export function ToolOptions({ toolName, options, setOptions, textInput }: ToolOp
                 <SelectItem value="bottom-left">{t('val.bottom_left')}</SelectItem>
                 <SelectItem value="bottom-center">{t('val.bottom_center')}</SelectItem>
                 <SelectItem value="bottom-right">{t('val.bottom_right')}</SelectItem>
+                <SelectItem value="custom">{t('val.custom')}</SelectItem>
               </SelectContent>
             </Select>
+            {options.position === 'custom' && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <div>
+                  <Label className="text-xs">X (%)</Label>
+                  <Input type="number" placeholder="50" min="0" max="100" onChange={(e) => setOptions({ ...options, x: parseInt(e.target.value) || 50 })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Y (%)</Label>
+                  <Input type="number" placeholder="95" min="0" max="100" onChange={(e) => setOptions({ ...options, y: parseInt(e.target.value) || 95 })} />
+                </div>
+                <div className="col-span-2">
+                  <div className="relative w-full aspect-[3/4] border rounded bg-white cursor-pointer max-h-48" onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+                    setOptions({ ...options, x, y });
+                  }}>
+                    <div className="absolute w-2 h-2 bg-red-500 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ left: `${options.x || 50}%`, top: `${options.y || 95}%` }} />
+                    <span className="absolute top-1 left-1 text-[9px] text-gray-400">点击定位页码</span>
+                  </div>
+                </div>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground mt-1">{t('opt.position.desc')}</p>
           </div>
           <div>
@@ -614,6 +638,7 @@ export function ToolOptions({ toolName, options, setOptions, textInput }: ToolOp
       );
 
     case 'pdf-rotate':
+      if (options.rotation === undefined) setOptions({ ...options, rotation: 90 });
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -744,8 +769,32 @@ export function ToolOptions({ toolName, options, setOptions, textInput }: ToolOp
                   <SelectItem value="top-right">{t('val.top_right')}</SelectItem>
                   <SelectItem value="bottom-left">{t('val.bottom_left')}</SelectItem>
                   <SelectItem value="bottom-right">{t('val.bottom_right')}</SelectItem>
+                  <SelectItem value="custom">{t('val.custom')}</SelectItem>
                 </SelectContent>
               </Select>
+              {options.position === 'custom' && (
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <Label className="text-xs">X (%)</Label>
+                    <Input type="number" placeholder="50" min="0" max="100" onChange={(e) => setOptions({ ...options, x: parseInt(e.target.value) || 50 })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Y (%)</Label>
+                    <Input type="number" placeholder="50" min="0" max="100" onChange={(e) => setOptions({ ...options, y: parseInt(e.target.value) || 50 })} />
+                  </div>
+                  <div className="col-span-2">
+                    <div className="relative w-full aspect-[3/4] border rounded bg-white cursor-pointer max-h-48" onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                      const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+                      setOptions({ ...options, x, y });
+                    }}>
+                      <div className="absolute w-2 h-2 bg-blue-500 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ left: `${options.x || 50}%`, top: `${options.y || 50}%` }} />
+                      <span className="absolute top-1 left-1 text-[9px] text-gray-400">点击定位水印</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -862,9 +911,33 @@ export function ToolOptions({ toolName, options, setOptions, textInput }: ToolOp
                   <SelectItem value="bottom-left">{t('val.bottom_left')}</SelectItem>
                   <SelectItem value="top-right">{t('val.top_right')}</SelectItem>
                   <SelectItem value="top-left">{t('val.top_left')}</SelectItem>
+                  <SelectItem value="custom">{t('val.custom') || '自定义'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            {options.position === 'custom' && (
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label>X (%)</Label>
+                  <Input type="number" placeholder="50" min="0" max="100" onChange={(e) => setOptions({ ...options, x: parseInt(e.target.value) || 50 })} />
+                </div>
+                <div>
+                  <Label>Y (%)</Label>
+                  <Input type="number" placeholder="50" min="0" max="100" onChange={(e) => setOptions({ ...options, y: parseInt(e.target.value) || 50 })} />
+                </div>
+                <div className="col-span-2">
+                  <div className="relative w-full h-24 border rounded bg-muted/30 cursor-pointer" onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+                    setOptions({ ...options, x, y });
+                  }}>
+                    <div className="absolute w-3 h-3 bg-primary rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ left: `${options.x || 50}%`, top: `${options.y || 50}%` }} />
+                    <span className="absolute bottom-1 right-2 text-xs text-muted-foreground">点击定位</span>
+                  </div>
+                </div>
+              </div>
+            )}
             <div>
               <Label>{t('opt.opacity')}</Label>
               <Input
@@ -1384,6 +1457,8 @@ export function ToolOptions({ toolName, options, setOptions, textInput }: ToolOp
       );
 
     case 'base-converter':
+      // Set defaults if not already set
+      if (options.fromBase === undefined) setOptions({ ...options, fromBase: 10, toBase: 16 });
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -1692,6 +1767,379 @@ export function ToolOptions({ toolName, options, setOptions, textInput }: ToolOp
     case 'jwt-decode':
     case 'file-info':
       return null;
+
+    // ==================== 新工具选项 ====================
+
+    case 'unit-converter':
+      if (!options.category) setOptions({ ...options, category: 'length', fromUnit: 'm', toUnit: 'km' });
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.category')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, category: value })}>
+              <SelectTrigger><SelectValue placeholder={t("unit.length")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="length">{t('unit.length')}</SelectItem>
+                <SelectItem value="weight">{t('unit.weight')}</SelectItem>
+                <SelectItem value="temperature">{t('unit.temperature')}</SelectItem>
+                <SelectItem value="area">{t('unit.area')}</SelectItem>
+                <SelectItem value="volume">{t('unit.volume')}</SelectItem>
+                <SelectItem value="speed">{t('unit.speed')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('opt.fromUnit')}</Label>
+              <Input placeholder="m" onChange={(e) => setOptions({ ...options, fromUnit: e.target.value })} />
+            </div>
+            <div>
+              <Label>{t('opt.toUnit')}</Label>
+              <Input placeholder="km" onChange={(e) => setOptions({ ...options, toUnit: e.target.value })} />
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'barcode-gen':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.format')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, format: value })}>
+              <SelectTrigger><SelectValue placeholder="CODE128" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="CODE128">CODE128</SelectItem>
+                <SelectItem value="CODE39">CODE39</SelectItem>
+                <SelectItem value="EAN13">EAN13</SelectItem>
+                <SelectItem value="EAN8">EAN8</SelectItem>
+                <SelectItem value="UPC">UPC-A</SelectItem>
+                <SelectItem value="ITF14">ITF-14</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('opt.barcode_width')}</Label>
+              <Input type="number" placeholder="2" min="1" max="4" onChange={(e) => setOptions({ ...options, width: parseInt(e.target.value) || 2 })} />
+            </div>
+            <div>
+              <Label>{t('opt.height')}</Label>
+              <Input type="number" placeholder="100" min="30" max="200" onChange={(e) => setOptions({ ...options, height: parseInt(e.target.value) || 100 })} />
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'text-crypto':
+      if (!options.algorithm) setOptions({ ...options, algorithm: 'aes-256-cbc', mode: 'encrypt' });
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.algorithm')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, algorithm: value })}>
+              <SelectTrigger><SelectValue placeholder="AES-256" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="aes-256-cbc">AES-256</SelectItem>
+                <SelectItem value="aes-128-cbc">AES-128</SelectItem>
+                <SelectItem value="des-cbc">DES</SelectItem>
+                <SelectItem value="base64-encode">{t("val.base64_encode")}</SelectItem>
+                <SelectItem value="base64-decode">{t("val.base64_decode")}</SelectItem>
+                <SelectItem value="rot13">{t("val.rot13")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{t('opt.mode')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, mode: value })}>
+              <SelectTrigger><SelectValue placeholder={t("val.encrypt")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="encrypt">{t("val.encrypt")}</SelectItem>
+                <SelectItem value="decrypt">{t("val.decrypt")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{t('opt.key')}</Label>
+            <Input type="password" placeholder={t("opt.key_placeholder")} onChange={(e) => setOptions({ ...options, key: e.target.value })} />
+          </div>
+        </div>
+      );
+
+    case 'css-gradient':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.gradient_type')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, type: value })}>
+              <SelectTrigger><SelectValue placeholder="linear" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="linear">{t("val.linear_gradient")}</SelectItem>
+                <SelectItem value="radial">{t("val.radial_gradient")}</SelectItem>
+                <SelectItem value="conic">{t("val.conic_gradient")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('opt.angle')}</Label>
+              <Input type="number" placeholder="180" min="0" max="360" onChange={(e) => setOptions({ ...options, angle: parseInt(e.target.value) || 180 })} />
+            </div>
+            <div>
+              <Label>{t('opt.gradient_shape')}</Label>
+              <Select onValueChange={(value) => setOptions({ ...options, shape: value })}>
+                <SelectTrigger><SelectValue placeholder="circle" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="circle">{t("val.circle")}</SelectItem>
+                  <SelectItem value="ellipse">{t("val.ellipse")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'image-exif':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.section')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, section: value })}>
+              <SelectTrigger><SelectValue placeholder={t("exif.all")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('exif.all')}</SelectItem>
+                <SelectItem value="basic">{t('exif.basic')}</SelectItem>
+                <SelectItem value="camera">{t('exif.camera')}</SelectItem>
+                <SelectItem value="gps">{t('exif.gps')}</SelectItem>
+                <SelectItem value="thumbnail">{t('exif.thumbnail')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+
+    case 'code-minify':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.language')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, language: value })}>
+              <SelectTrigger><SelectValue placeholder="HTML" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="html">HTML</SelectItem>
+                <SelectItem value="css">CSS</SelectItem>
+                <SelectItem value="javascript">JavaScript</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+
+    case 'color-palette':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.base_color')}</Label>
+            <Input placeholder="#3498db" onChange={(e) => setOptions({ ...options, color: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('opt.scheme')}</Label>
+              <Select onValueChange={(value) => setOptions({ ...options, scheme: value })}>
+                <SelectTrigger><SelectValue placeholder={t("val.complementary")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="complementary">{t("val.complementary")}</SelectItem>
+                  <SelectItem value="analogous">{t("val.analogous")}</SelectItem>
+                  <SelectItem value="triadic">{t("val.triadic")}</SelectItem>
+                  <SelectItem value="split-complementary">{t("val.split_complementary")}</SelectItem>
+                  <SelectItem value="monochromatic">{t("val.monochromatic")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t('opt.count')}</Label>
+              <Input type="number" placeholder="5" min="2" max="10" onChange={(e) => setOptions({ ...options, count: parseInt(e.target.value) || 5 })} />
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'svg-optimize':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.decimalPrecision')}</Label>
+            <Input type="number" placeholder="2" min="0" max="6" onChange={(e) => setOptions({ ...options, decimalPrecision: parseInt(e.target.value) || 2 })} />
+          </div>
+        </div>
+      );
+
+    case 'video-thumbnail':
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('opt.timestamp')}</Label>
+              <Input placeholder="00:00:01" onChange={(e) => setOptions({ ...options, timestamp: e.target.value })} />
+            </div>
+            <div>
+              <Label>{t('opt.width')}</Label>
+              <Input type="number" placeholder="640" min="100" max="1920" onChange={(e) => setOptions({ ...options, width: parseInt(e.target.value) || 640 })} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('opt.format')}</Label>
+              <Select onValueChange={(value) => setOptions({ ...options, format: value })}>
+                <SelectTrigger><SelectValue placeholder="JPG" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="jpg">JPG</SelectItem>
+                  <SelectItem value="png">PNG</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t('opt.quality')}</Label>
+              <Input type="number" placeholder="80" min="1" max="100" onChange={(e) => setOptions({ ...options, quality: parseInt(e.target.value) || 80 })} />
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'image-compare':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.compare_mode')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, mode: value })}>
+              <SelectTrigger><SelectValue placeholder={t("val.side_by_side")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="side-by-side">{t("val.side_by_side")}</SelectItem>
+                <SelectItem value="overlay">{t("val.overlay")}</SelectItem>
+                <SelectItem value="diff">{t("val.diff")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('opt.compare_maxWidth')}</Label>
+              <Input type="number" placeholder="800" min="100" max="4000" onChange={(e) => setOptions({ ...options, maxWidth: parseInt(e.target.value) || 800 })} />
+            </div>
+            <div>
+              <Label>{t('opt.quality')}</Label>
+              <Input type="number" placeholder="85" min="1" max="100" onChange={(e) => setOptions({ ...options, quality: parseInt(e.target.value) || 85 })} />
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'gif-maker':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.mode')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, mode: value })}>
+              <SelectTrigger><SelectValue placeholder={t("val.images_to_gif")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="images-to-gif">{t("val.images_to_gif")}</SelectItem>
+                <SelectItem value="video-to-gif">{t("val.video_to_gif")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label>{t('opt.fps')}</Label>
+              <Input type="number" placeholder="10" min="1" max="30" onChange={(e) => setOptions({ ...options, fps: parseInt(e.target.value) || 10 })} />
+            </div>
+            <div>
+              <Label>{t('opt.width')}</Label>
+              <Input type="number" placeholder="320" min="50" max="800" onChange={(e) => setOptions({ ...options, width: parseInt(e.target.value) || 320 })} />
+            </div>
+            <div>
+              <Label>{t('opt.loop')}</Label>
+              <Input type="number" placeholder="0" min="0" max="100" onChange={(e) => setOptions({ ...options, loop: parseInt(e.target.value) || 0 })} />
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'dns-lookup':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.recordType')}</Label>
+            <Select onValueChange={(value) => setOptions({ ...options, recordType: value })}>
+              <SelectTrigger><SelectValue placeholder="ALL" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">ALL</SelectItem>
+                <SelectItem value="A">A</SelectItem>
+                <SelectItem value="AAAA">AAAA</SelectItem>
+                <SelectItem value="MX">MX</SelectItem>
+                <SelectItem value="NS">NS</SelectItem>
+                <SelectItem value="TXT">TXT</SelectItem>
+                <SelectItem value="CNAME">CNAME</SelectItem>
+                <SelectItem value="SOA">SOA</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+
+    case 'ssl-checker':
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label>{t('opt.port')}</Label>
+            <Input type="number" placeholder="443" min="1" max="65535" onChange={(e) => setOptions({ ...options, port: parseInt(e.target.value) || 443 })} />
+          </div>
+        </div>
+      );
+
+    case 'font-preview':
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>{t('opt.font')}</Label>
+              <Input placeholder="system-ui" onChange={(e) => setOptions({ ...options, font: e.target.value })} />
+            </div>
+            <div>
+              <Label>{t('opt.fontSize')}</Label>
+              <Input type="number" placeholder="24" min="8" max="200" onChange={(e) => setOptions({ ...options, size: parseInt(e.target.value) || 24 })} />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label>{t('opt.fontWeight')}</Label>
+              <Select onValueChange={(value) => setOptions({ ...options, weight: parseInt(value as string) })}>
+                <SelectTrigger><SelectValue placeholder="400" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="100">100 Thin</SelectItem>
+                  <SelectItem value="300">300 Light</SelectItem>
+                  <SelectItem value="400">400 Normal</SelectItem>
+                  <SelectItem value="600">600 SemiBold</SelectItem>
+                  <SelectItem value="700">700 Bold</SelectItem>
+                  <SelectItem value="900">900 Black</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t('opt.fontStyle')}</Label>
+              <Select onValueChange={(value) => setOptions({ ...options, style: value })}>
+                <SelectTrigger><SelectValue placeholder="normal" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="italic">Italic</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t('opt.color')}</Label>
+              <Input placeholder="#000000" onChange={(e) => setOptions({ ...options, color: e.target.value })} />
+            </div>
+          </div>
+        </div>
+      );
 
     default:
       return null;

@@ -20,7 +20,8 @@ import {
   Volume2,
   RefreshCw,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Heart
 } from 'lucide-react';
 
 const getCategoryKey = (name: string) => `nav.${name.toLowerCase()}`;
@@ -36,6 +37,7 @@ const categories = [
   { name: 'Dev', icon: Code, href: '/dev' },
   { name: 'File', icon: Folder, href: '/file' },
   { name: 'Craft', icon: Palette, href: '/craft' },
+  { name: 'Life', icon: Heart, href: '/life' },
 ];
 
 export function Sidebar() {

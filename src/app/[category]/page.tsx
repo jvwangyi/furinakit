@@ -7,6 +7,7 @@ import { ToolCard } from '@/components/tools/ToolCard';
 import { Search } from 'lucide-react';
 import { apiPath } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
+import { useFavorites } from '@/lib/hooks/useFavorites';
 import type { ToolInfo } from '@/types/tool';
 import { categoryKeys } from '@/lib/constants';
 
@@ -17,6 +18,7 @@ export default function CategoryPage() {
   const [tools, setTools] = useState<ToolInfo[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
     fetch(apiPath('/api/tools'))
@@ -80,6 +82,8 @@ export default function CategoryPage() {
                 name={tool.name}
                 description={tool.description}
                 category={tool.category}
+                isFavorite={isFavorite(tool.name)}
+                onToggleFavorite={toggleFavorite}
               />
             ))}
           </div>

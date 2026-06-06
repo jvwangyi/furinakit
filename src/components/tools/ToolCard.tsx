@@ -13,7 +13,8 @@ import {
   ArrowRightLeft,
   Folder,
   Palette,
-  Wrench
+  Wrench,
+  Star,
 } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { categoryKeys } from '@/lib/constants';
@@ -22,6 +23,8 @@ interface ToolCardProps {
   name: string;
   description: string;
   category: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: (name: string) => void;
 }
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -60,7 +63,7 @@ const categoryIconBg: Record<string, string> = {
   craft: 'bg-pink-500/10 text-pink-500 dark:text-pink-400',
 };
 
-export function ToolCard({ name, description, category }: ToolCardProps) {
+export function ToolCard({ name, description, category, isFavorite, onToggleFavorite }: ToolCardProps) {
   const { t } = useI18n();
   const icon = categoryIcons[category] || <Wrench className="h-5 w-5" />;
   const colorClass = categoryColors[category] || 'bg-slate-500/10 text-slate-500 dark:text-slate-400 border-slate-500/20';
@@ -77,9 +80,31 @@ export function ToolCard({ name, description, category }: ToolCardProps) {
             <div className={`p-2.5 rounded-xl ${iconBgClass} transition-transform duration-300 group-hover:scale-105`}>
               {icon}
             </div>
-            <Badge variant="secondary" className={`${colorClass} border text-xs`}>
-              {t(categoryKeys[category]) || category}
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge variant="secondary" className={`${colorClass} border text-xs`}>
+                {t(categoryKeys[category]) || category}
+              </Badge>
+              {onToggleFavorite && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggleFavorite(name);
+                  }}
+                  className="p-1 rounded-md hover:bg-amber-500/10 transition-colors"
+                  title={isFavorite ? t('favorites.remove') : t('favorites.add')}
+                >
+                  <Star
+                    className={`h-4 w-4 transition-colors ${
+                      isFavorite
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'text-muted-foreground/40 hover:text-amber-400'
+                    }`}
+                  />
+                </button>
+              )}
+            </div>
           </div>
           <CardTitle className="text-lg mt-3 group-hover:text-primary transition-colors duration-200">
             {displayName}

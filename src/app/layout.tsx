@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Providers } from "@/components/providers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { StarryBackground } from "@/components/StarryBackground";
 import { withBasePath } from "@/lib/basePath";
 
 const geistSans = Geist({
@@ -20,10 +21,32 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "FurinaKit - Furina's Toolbox",
-  description: "An elegant online toolbox with 39+ practical tools for PDF, image, text processing and more",
+  description: "An elegant online toolbox with 80+ practical tools for PDF, image, text, audio, video processing and more. Free, fast, no signup required.",
   icons: {
     icon: withBasePath("/furina.jpg"),
     apple: withBasePath("/furina.jpg"),
+  },
+  openGraph: {
+    title: "FurinaKit - Furina's Toolbox",
+    description: "An elegant online toolbox with 80+ practical tools for PDF, image, text, audio, video processing and more.",
+    url: "https://furinakit.example.com",
+    siteName: "FurinaKit",
+    locale: "zh_CN",
+    type: "website",
+    images: [
+      {
+        url: withBasePath("/furina.jpg"),
+        width: 512,
+        height: 512,
+        alt: "FurinaKit Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FurinaKit - Furina's Toolbox",
+    description: "An elegant online toolbox with 80+ practical tools.",
+    images: [withBasePath("/furina.jpg")],
   },
   other: {
     "theme-color": "#3b82f6",
@@ -49,6 +72,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <StarryBackground />
         <Providers>
           <ErrorBoundary>
             <MobileNav />

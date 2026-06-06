@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { FileUploader } from './FileUploader';
 
-const onFilesSelected = (files: File[]) => console.log('Selected files:', files);
+const onFilesSelected = (files: File[]) => { /* selected files handler */ };
 
 const meta: Meta<typeof FileUploader> = {
   title: 'Tools/FileUploader',
@@ -20,7 +20,7 @@ type Story = StoryObj<typeof FileUploader>;
 export const Default: Story = {
   args: {
     onFilesSelected,
-    label: '拖拽文件到此处或点击上传',
+    label: 'Drop files here or click to upload',
   },
 };
 
@@ -28,7 +28,7 @@ export const MultipleFiles: Story = {
   args: {
     onFilesSelected,
     multiple: true,
-    label: '支持多文件上传',
+    label: 'Supports multiple files',
   },
 };
 
@@ -38,7 +38,7 @@ export const ImageOnly: Story = {
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     },
-    label: '仅支持图片文件（PNG, JPG, GIF, WebP）',
+    label: 'Images only (PNG, JPG, GIF, WebP)',
   },
 };
 
@@ -46,7 +46,7 @@ export const WithSizeLimit: Story = {
   args: {
     onFilesSelected,
     maxSize: 5 * 1024 * 1024, // 5MB
-    label: '文件大小限制 5MB',
+    label: 'Max file size: 5MB',
   },
 };
 
@@ -56,6 +56,6 @@ export const PDFOnly: Story = {
     accept: {
       'application/pdf': ['.pdf'],
     },
-    label: '仅支持 PDF 文件',
+    label: 'PDF only',
   },
 };
