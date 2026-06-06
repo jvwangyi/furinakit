@@ -7,6 +7,7 @@
 ## 目录
 
 - [定期检查项](#定期检查项)
+- [杂项文件和中间文件维护](#杂项文件和中间文件维护)
 - [依赖更新](#依赖更新)
 - [测试覆盖](#测试覆盖)
 - [文档同步](#文档同步)
@@ -40,6 +41,121 @@
 | CI/CD 状态 | 检查 GitHub Actions 运行状态 |
 | 文档更新 | 同步 README、CHANGELOG |
 | 测试覆盖 | 确保新工具有测试 |
+
+---
+
+## 杂项文件和中间文件维护
+
+### 文件分类
+
+| 类型 | 文件/目录 | 说明 | 维护方式 |
+|------|-----------|------|----------|
+| 构建产物 | `.next/` | Next.js 编译输出 | `npm run build` 重新生成 |
+| 依赖包 | `node_modules/` | 第三方依赖 | `npm install` 重新安装 |
+| 生成代码 | `src/generated/prisma/` | Prisma Client | `npx prisma generate` 重新生成 |
+| 生成文件 | `next-env.d.ts` | Next.js 类型声明 | `npm run dev` 自动生成 |
+| 编译缓存 | `tsconfig.tsbuildinfo` | TS 增量编译缓存 | `npx tsc` 自动生成 |
+| 测试结果 | `test-results/` | Playwright 测试结果 | `npx playwright test` 重新生成 |
+| 覆盖率 | `coverage/` | 测试覆盖率报告 | `npx vitest run --coverage` 重新生成 |
+| Storybook | `storybook-static/` | Storybook 静态站点 | `npm run build-storybook` 重新生成 |
+| 代码索引 | `.codegraph/` | CodeGraph MCP 索引 | CodeGraph 自动生成 |
+| 运行时数据 | `data/` | 反馈、统计、最近使用 | 应用运行时生成 |
+| 开发数据库 | `prisma/dev.db` | SQLite 开发数据库 | `npx prisma migrate dev` 重新生成 |
+| 环境变量 | `.env`, `.env.local` | 本地配置 | 手动创建，不提交 git |
+| 自动生成 | `AGENTS.md` | Next.js Agent 规则 | Next.js 自动生成 |
+
+### 清理命令
+
+```bash
+# 清理所有构建产物和缓存
+rm -rf .next node_modules storybook-static test-results coverage tsconfig.tsbuildinfo
+
+# 清理 Prisma 生成代码
+rm -rf src/generated/prisma
+
+# 清理开发数据库
+rm -f prisma/dev.db prisma/dev.db-journal
+
+# 清理运行时数据
+rm -rf data/
+
+# 完全重置（谨慎使用）
+rm -rf .next node_modules storybook-static test-results coverage tsconfig.tsbuildinfo src/generated/prisma prisma/dev.db*
+```
+
+### 重建命令
+
+```bash
+# 1. 重新安装依赖
+npm install
+
+# 2. 重新生成 Prisma Client
+npx prisma generate
+
+# 3. 重新初始化数据库（开发环境）
+npx prisma migrate dev
+
+# 4. 重新构建
+npm run build
+
+# 5. 重新生成 Storybook（可选）
+npm run build-storybook
+```
+
+### 维护检查清单
+
+#### 遇到构建失败时
+
+- [ ] 检查 `node_modules/` 是否完整 → `npm install`
+- [ ] 检查 `src/generated/prisma/` 是否存在 → `npx prisma generate`
+- [ ] 检查 `.next/` 是否损坏 → `rm -rf .next && npm run build`
+- [ ] 检查 `tsconfig.tsbuildinfo` 是否过期 → 删除后重新构建
+
+#### 遇到测试失败时
+
+- [ ] 检查 `test-results/` 是否有残留 → 删除后重新测试
+- [ ] 检查 `coverage/` 是否过期 → 删除后重新生成
+- [ ] 检查 `prisma/dev.db` 是否存在 → `npx prisma migrate dev`
+
+#### 遇到类型错误时
+
+- [ ] 检查 `src/generated/prisma/` 是否最新 → `npx prisma generate`
+- [ ] 检查 `next-env.d.ts` 是否存在 → `npm run dev` 自动生成
+- [ ] 检查 `tsconfig.tsbuildinfo` 是否损坏 → 删除后重新检查
+
+#### 遇到依赖问题时
+
+- [ ] 检查 `node_modules/` 是否完整 → `rm -rf node_modules && npm install`
+- [ ] 检查 `package-lock.json` 是否冲突 → `git checkout package-lock.json`
+- [ ] 检查是否有安全漏洞 → `npm audit`
+
+### 文件大小监控
+
+| 文件/目录 | 正常大小 | 异常处理 |
+|-----------|----------|----------|
+| `node_modules/` | 500MB-1GB | 正常，无需处理 |
+| `.next/` | 100-500MB | 正常，构建产物 |
+| `test-results/` | < 100MB | 过大则清理 |
+| `coverage/` | < 50MB | 过大则清理 |
+| `data/` | < 10MB | 过大则检查数据增长 |
+| `prisma/dev.db` | < 10MB | 过大则重置数据库 |
+
+### 紧急恢复
+
+```bash
+# 完全重置项目状态
+rm -rf .next node_modules storybook-static test-results coverage tsconfig.tsbuildinfo src/generated/prisma prisma/dev.db*
+
+# 重新初始化
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run build
+
+# 验证
+npx tsc --noEmit
+npx vitest run
+```
 
 ---
 
