@@ -32,7 +32,7 @@ furinakit/
 ├── LICENSE                     # MIT 开源许可证
 ├── MAINTENANCE_PLAN.md         # 维护计划
 ├── README.md                   # 项目文档（四语言）
-├── check_i18n.cjs              # i18n 完整性检查脚本
+├── scripts/                    # 工具脚本
 ├── components.json             # shadcn/ui 配置
 ├── eslint.config.mjs           # ESLint 配置
 ├── next-env.d.ts               # Next.js 类型声明（gitignore）
@@ -59,7 +59,7 @@ furinakit/
 | `LICENSE` | MIT 开源许可证 |
 | `MAINTENANCE_PLAN.md` | 项目维护计划和检查清单 |
 | `README.md` | 项目文档，包含中文/English/日本語/한국어 四语言 |
-| `check_i18n.cjs` | Node.js 脚本，检查 62 个工具是否都有四语言翻译 |
+| `scripts/` | 工具脚本目录（check_i18n.cjs、check-routes.mjs 等） |
 | `components.json` | shadcn/ui 组件库配置（主题、路径别名） |
 | `eslint.config.mjs` | ESLint 代码规范配置 |
 | `next.config.ts` | Next.js 配置：CI 环境 basePath 为空，生产为 `/furinakit` |

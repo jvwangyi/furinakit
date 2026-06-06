@@ -2,6 +2,16 @@
 
 感谢你对 FurinaKit 项目的关注！我们欢迎任何形式的贡献。
 
+## 📚 相关文档
+
+| 文档 | 内容 |
+|------|------|
+| [`docs/development-guide.md`](docs/development-guide.md) | 详细开发流程、代码示例、测试规范 |
+| [`docs/maintenance-guide.md`](docs/maintenance-guide.md) | 维护流程、依赖更新、文档同步 |
+| [`docs/deployment-guide.md`](docs/deployment-guide.md) | 环境配置、CI/CD、Docker 部署 |
+| [`docs/project-structure.md`](docs/project-structure.md) | 完整项目结构 |
+| [`CLAUDE.md`](CLAUDE.md) | AI 开发规范速查 |
+
 ## 📋 目录
 
 - [行为准则](#行为准则)

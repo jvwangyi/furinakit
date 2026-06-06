@@ -1,5 +1,14 @@
 # FurinaKit 开发规范
 
+## 相关文档
+
+| 文档 | 内容 |
+|------|------|
+| `docs/development-guide.md` | 详细开发流程、代码示例、测试规范 |
+| `docs/maintenance-guide.md` | 维护流程、依赖更新、文档同步 |
+| `docs/deployment-guide.md` | 环境配置、CI/CD、Docker 部署 |
+| `docs/project-structure.md` | 完整项目结构 |
+
 ## 技术栈
 Next.js 16 + TypeScript + Tailwind CSS + Prisma + shadcn/ui + pino（日志）+ geist（字体）
 
@@ -13,7 +22,7 @@ Next.js 16 + TypeScript + Tailwind CSS + Prisma + shadcn/ui + pino（日志）+ 
 | `npx playwright test` | E2E 测试 |
 | `npx prisma migrate dev` | 数据库迁移 |
 | `npx prisma generate` | 重新生成 Prisma Client |
-| `node check_i18n.cjs` | i18n 完整性检查 |
+| `node scripts/check_i18n.cjs` | i18n 完整性检查 |
 
 ## 目录结构
 ```
