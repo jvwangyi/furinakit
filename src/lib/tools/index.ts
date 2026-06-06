@@ -79,6 +79,7 @@ import './gif-maker';
 import './dns-lookup';
 import './ssl-checker';
 import './font-preview';
+import './ip-lookup';
 import './ascii-art';
 import './word-cloud';
 import './image-add-text';

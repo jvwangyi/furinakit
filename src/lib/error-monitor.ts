@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 interface ErrorEntry {
   id: string;
   toolName: string;
@@ -40,9 +42,9 @@ export function captureError(params: {
     errors.length = MAX_ERRORS;
   }
 
-  // Log to console in development
+  // Log in development
   if (process.env.NODE_ENV !== 'production') {
-    console.error(`[ErrorMonitor] ${params.toolName}: ${params.error}`);
+    logger.error({ toolName: params.toolName }, `[ErrorMonitor] ${params.error}`);
   }
 
   return id;

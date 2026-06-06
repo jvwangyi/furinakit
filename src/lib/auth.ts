@@ -5,6 +5,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from './prisma';
 import { Resend } from 'resend';
 import crypto from 'crypto';
+import { logger } from './logger';
 
 /**
  * Send a 6-digit verification code to the user's email
@@ -50,15 +51,13 @@ export async function sendVerificationCode(email: string): Promise<{ success: bo
       });
       return { success: true };
     } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to send verification email:', err);
+      logger.error({ err }, 'Failed to send verification email');
       return { success: false, error: '邮件发送失败，请稍后重试' };
     }
   }
 
-  // Fallback: log to console (dev only)
-  // eslint-disable-next-line no-console
-  console.log(`\n🔑 验证码 for ${email}: ${code}\n`);
+  // Fallback: log verification code (dev only)
+  logger.info({ email }, `🔑 验证码: ${code}`);
   return { success: true };
 }
 
