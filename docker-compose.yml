@@ -20,6 +20,27 @@ services:
       retries: 3
       start_period: 10s
 
+  furinakit-blue:
+    build: .
+    environment:
+      - NODE_ENV=production
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - DATABASE_URL=${DATABASE_URL:-file:./dev.db}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - EMAIL_FROM=${EMAIL_FROM:-}
+    volumes:
+      - furinakit-data:/app/data
+      - furinakit-tmp:/tmp/furinakit
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    profiles:
+      - blue-green
+
   nginx:
     image: nginx:alpine
     ports:

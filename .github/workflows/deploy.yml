@@ -58,15 +58,20 @@ jobs:
       #       ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
       #       ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      # Deploy via SSH (uncomment and configure when server is ready)
-      # - name: Deploy to server
-      #   uses: appleboy/ssh-action@v1
-      #   with:
-      #     host: ${{ secrets.DEPLOY_HOST }}
-      #     username: ${{ secrets.DEPLOY_USER }}
-      #     key: ${{ secrets.DEPLOY_KEY }}
-      #     script: |
-      #       cd /opt/furinakit
-      #       docker compose pull
-      #       docker compose up -d
-      #       docker system prune -f
+      # Deploy via SSH with rolling update
+      - name: Deploy to server
+        if: success()
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            cd /opt/furinakit
+            export FURINAKIT_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            docker pull $FURINAKIT_IMAGE
+            docker compose up -d --no-deps --scale furinakit=2 furinakit
+            sleep 30
+            docker compose up -d --no-deps --scale furinakit=1 furinakit
+            docker compose exec -T nginx nginx -s reload 2>/dev/null || true
+            docker system prune -f
