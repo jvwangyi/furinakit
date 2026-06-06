@@ -1,91 +1,80 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wrench, Users as UsersIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/lib/i18n';
+import { withBasePath } from '@/lib/basePath';
+import { Wrench } from 'lucide-react';
 
-interface Tool {
+interface ToolItem {
   name: string;
   usageCount: number;
   uniqueUsers: number;
 }
 
-export default function ToolsPage() {
-  const [tools, setTools] = useState<Tool[]>([]);
+export default function AdminToolsPage() {
+  const { t } = useI18n();
+  const [tools, setTools] = useState<ToolItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/admin/tools')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setTools(data.data);
-      })
+    fetch(withBasePath('/api/admin/tools'))
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setTools(d.data); })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const maxUsage = tools.length > 0 ? Math.max(...tools.map((t) => t.usageCount), 1) : 1;
+  if (loading) {
+    return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">工具管理</h1>
-        <p className="text-muted-foreground mt-1">所有工具的使用统计</p>
-      </div>
-
-      <div className="border rounded-xl bg-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">工具名称</th>
-                <th className="px-4 py-3 text-left font-medium">使用次数</th>
-                <th className="px-4 py-3 text-left font-medium">独立用户</th>
-                <th className="px-4 py-3 text-left font-medium">使用量</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                    加载中...
-                  </td>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Wrench className="h-5 w-5" />
+          {t('admin.tool_list')}
+          <span className="text-sm font-normal text-muted-foreground">({tools.length})</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {tools.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">#</th>
+                  <th className="pb-2 font-medium">{t('admin.tool_name')}</th>
+                  <th className="pb-2 font-medium text-right">{t('admin.tool_usage')}</th>
+                  <th className="pb-2 font-medium text-right">{t('admin.tool_users')}</th>
+                  <th className="pb-2 font-medium text-center">Status</th>
                 </tr>
-              ) : tools.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                    暂无数据
-                  </td>
-                </tr>
-              ) : (
-                tools.map((tool) => (
-                  <tr key={tool.name} className="border-b last:border-b-0 hover:bg-muted/30">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Wrench className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{tool.name}</span>
-                      </div>
+              </thead>
+              <tbody>
+                {tools.map((tool, i) => (
+                  <tr key={tool.name} className="border-b last:border-0 hover:bg-muted/50">
+                    <td className="py-2.5 text-muted-foreground w-8">{i + 1}</td>
+                    <td className="py-2.5 font-medium">{t(`tool.${tool.name}`) || tool.name}</td>
+                    <td className="py-2.5 text-right">
+                      <span className="font-mono">{tool.usageCount.toLocaleString()}</span>
                     </td>
-                    <td className="px-4 py-3">{tool.usageCount.toLocaleString()}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <UsersIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                        {tool.uniqueUsers}
-                      </div>
+                    <td className="py-2.5 text-right">
+                      <span className="font-mono">{tool.uniqueUsers}</span>
                     </td>
-                    <td className="px-4 py-3 w-48">
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div
-                          className="bg-primary rounded-full h-2 transition-all"
-                          style={{ width: `${(tool.usageCount / maxUsage) * 100}%` }}
-                        />
-                      </div>
+                    <td className="py-2.5 text-center">
+                      <Badge variant="default" className="bg-green-600">Active</Badge>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-sm py-8 text-center">{t('dashboard.no_data')}</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
