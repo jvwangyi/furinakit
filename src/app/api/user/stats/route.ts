@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         totalUsage,
         favoritesCount,
         recentHistory,
-        topTools: topTools.map(t => ({
+        topTools: topTools.map((t: { toolName: string; _count: { toolName: number } }) => ({
           toolName: t.toolName,
           count: t._count.toolName,
         })),
