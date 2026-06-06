@@ -10,12 +10,15 @@ const PositionEnum = z.enum([
   'bottom-left',
   'bottom-center',
   'bottom-right',
+  'custom',
 ]);
 
 const inputSchema = z.object({
   file: z.instanceof(Buffer),
   position: PositionEnum.default('bottom-center'),
   fontSize: z.number().min(6).max(72).default(12),
+  x: z.number().min(0).max(100).optional(),
+  y: z.number().min(0).max(100).optional(),
 });
 
 const tool: Tool = {
@@ -24,7 +27,7 @@ const tool: Tool = {
   category: 'pdf',
   inputSchema,
   execute: async (input): Promise<ToolResult> => {
-    const { file, position, fontSize } = inputSchema.parse(input);
+    const { file, position, fontSize, x: customX, y: customY } = inputSchema.parse(input);
 
     try {
       const pdfDoc = await PDFDocument.load(file);
@@ -44,31 +47,39 @@ const tool: Tool = {
 
         const margin = 30;
 
-        switch (position) {
-          case 'top-left':
-            x = margin;
-            y = height - margin - textHeight;
-            break;
-          case 'top-center':
-            x = (width - textWidth) / 2;
-            y = height - margin - textHeight;
-            break;
-          case 'top-right':
-            x = width - margin - textWidth;
-            y = height - margin - textHeight;
-            break;
-          case 'bottom-left':
-            x = margin;
-            y = margin;
-            break;
-          case 'bottom-center':
-            x = (width - textWidth) / 2;
-            y = margin;
-            break;
-          case 'bottom-right':
-            x = width - margin - textWidth;
-            y = margin;
-            break;
+        if (position === 'custom' && customX !== undefined && customY !== undefined) {
+          x = (customX / 100) * width;
+          y = (1 - customY / 100) * height;
+        } else {
+          switch (position) {
+            case 'top-left':
+              x = margin;
+              y = height - margin - textHeight;
+              break;
+            case 'top-center':
+              x = (width - textWidth) / 2;
+              y = height - margin - textHeight;
+              break;
+            case 'top-right':
+              x = width - margin - textWidth;
+              y = height - margin - textHeight;
+              break;
+            case 'bottom-left':
+              x = margin;
+              y = margin;
+              break;
+            case 'bottom-center':
+              x = (width - textWidth) / 2;
+              y = margin;
+              break;
+            case 'bottom-right':
+              x = width - margin - textWidth;
+              y = margin;
+              break;
+            default:
+              x = (width - textWidth) / 2;
+              y = margin;
+          }
         }
 
         page.drawText(pageNum, {

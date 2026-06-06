@@ -9,7 +9,9 @@ const inputSchema = z.object({
   fontSize: z.number().min(10).max(200).default(50),
   opacity: z.number().min(0).max(1).default(0.3),
   color: z.string().default('#888888'),
-  position: z.enum(['center', 'top-left', 'top-right', 'bottom-left', 'bottom-right']).default('center'),
+  position: z.enum(['center', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'custom']).default('center'),
+  x: z.number().min(0).max(100).optional(),
+  y: z.number().min(0).max(100).optional(),
 });
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
@@ -27,7 +29,7 @@ const tool: Tool = {
   category: 'pdf',
   inputSchema,
   execute: async (input): Promise<ToolResult> => {
-    const { file, text, fontSize, opacity, color, position } = inputSchema.parse(input);
+    const { file, text, fontSize, opacity, color, position, x: customX, y: customY } = inputSchema.parse(input);
 
     try {
       const pdfDoc = await PDFDocument.load(file);
@@ -43,28 +45,33 @@ const tool: Tool = {
         let x: number;
         let y: number;
 
-        switch (position) {
-          case 'top-left':
-            x = 20;
-            y = height - textHeight - 20;
-            break;
-          case 'top-right':
-            x = width - textWidth - 20;
-            y = height - textHeight - 20;
-            break;
-          case 'bottom-left':
-            x = 20;
-            y = 20;
-            break;
-          case 'bottom-right':
-            x = width - textWidth - 20;
-            y = 20;
-            break;
-          case 'center':
-          default:
-            x = (width - textWidth) / 2;
-            y = (height - textHeight) / 2;
-            break;
+        if (position === 'custom' && customX !== undefined && customY !== undefined) {
+          x = (customX / 100) * width - textWidth / 2;
+          y = (1 - customY / 100) * height - textHeight / 2;
+        } else {
+          switch (position) {
+            case 'top-left':
+              x = 20;
+              y = height - textHeight - 20;
+              break;
+            case 'top-right':
+              x = width - textWidth - 20;
+              y = height - textHeight - 20;
+              break;
+            case 'bottom-left':
+              x = 20;
+              y = 20;
+              break;
+            case 'bottom-right':
+              x = width - textWidth - 20;
+              y = 20;
+              break;
+            case 'center':
+            default:
+              x = (width - textWidth) / 2;
+              y = (height - textHeight) / 2;
+              break;
+          }
         }
 
         page.drawText(text, {

@@ -5,7 +5,8 @@ import { Tool, ToolResult, register } from '../registry';
 import { ToolError, ErrorCode } from '../errors';
 import { readFile, writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomBytes } from 'crypto';
+import { createProgress, updateProgress, completeProgress, failProgress } from '../progress';
 
 const inputSchema = z.object({
   file: z.instanceof(Buffer),
@@ -37,6 +38,9 @@ const tool: Tool = {
 
       const { crf, preset } = presets[quality];
 
+      const progressId = randomBytes(8).toString('hex');
+      createProgress(progressId, 'video-compress');
+
       await new Promise<void>((resolve, reject) => {
         const TIMEOUT_MS = 5 * 60 * 1000; // 5 分钟超时
         let command = ffmpeg(inputPath)
@@ -60,8 +64,11 @@ const tool: Tool = {
         command
           .format('mp4')
           .output(outputPath)
-          .on('end', () => { clearTimeout(timer); resolve(); })
-          .on('error', (err) => { clearTimeout(timer); reject(new Error(err.message)); })
+          .on('progress', (p) => {
+            updateProgress(progressId, Math.round(p.percent || 0), `Processing: ${(p.percent || 0).toFixed(1)}%`);
+          })
+          .on('end', () => { clearTimeout(timer); completeProgress(progressId); resolve(); })
+          .on('error', (err) => { clearTimeout(timer); failProgress(progressId, err.message); reject(new Error(err.message)); })
           .run();
       });
 
@@ -74,6 +81,7 @@ const tool: Tool = {
         data: outputBuffer,
         mimeType: 'video/mp4',
         filename: 'compressed.mp4',
+        progressId,
       };
     } catch (e) {
       // Cleanup on error

@@ -1,6 +1,13 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { errorResponse, ToolError, ErrorCode } from './errors';
+import { captureError } from './error-monitor';
 import { getTool } from './registry';
+import { extractApiKey, defaultLimiter, apiKeyLimiter } from './rate-limit';
+import { validateApiKey } from './api-key';
+import { recordToolUsage } from './tool-stats';
+import { validateFileType, sanitizeFilename, withCategoryTimeout } from './file-security';
+import { getSessionUser } from './auth-helpers';
+import { prisma } from './prisma';
 import type { Tool } from '../types/tool';
 
 // Ensure all tools are registered when any route uses createToolRoute
@@ -43,6 +50,7 @@ export async function parseFormDataInput(req: NextRequest) {
         const arrayBuffer = await value.arrayBuffer();
         const buf = Buffer.from(arrayBuffer);
         checkFileSize(buf);
+        validateFileType(buf, 'default', value.name);
         fileCounts[key] = (fileCounts[key] || 0) + 1;
         if (fileCounts[key] > 1) {
           if (!Array.isArray(result[key])) result[key] = [result[key]];
@@ -111,6 +119,7 @@ export async function parseFormDataFile(req: NextRequest): Promise<{ file: Buffe
         const arrayBuffer = await value.arrayBuffer();
         file = Buffer.from(arrayBuffer);
         checkFileSize(file);
+        validateFileType(file, 'default', value.name);
       } else {
         // Try to parse JSON values
         try {
@@ -172,6 +181,35 @@ export function createToolRoute(
 
   return async function POST(req: NextRequest) {
     try {
+      // Rate limit check — API key users get 300/min, others get 60/min
+      const apiKeyValue = extractApiKey(req);
+      let isApiKeyAuth = false;
+
+      if (apiKeyValue) {
+        const validKey = validateApiKey(apiKeyValue);
+        if (validKey) {
+          isApiKeyAuth = true;
+        }
+      }
+
+      const limiter = isApiKeyAuth ? apiKeyLimiter : defaultLimiter;
+      const limitMax = isApiKeyAuth ? '300' : '60';
+      const { allowed, remaining, resetTime } = limiter.check(req);
+      if (!allowed) {
+        return NextResponse.json(
+          { success: false, error: { code: 'RATE_LIMITED', message: 'Too many requests' } },
+          {
+            status: 429,
+            headers: {
+              'X-RateLimit-Limit': limitMax,
+              'X-RateLimit-Remaining': '0',
+              'X-RateLimit-Reset': resetTime.toString(),
+              'Retry-After': Math.ceil((resetTime - Date.now()) / 1000).toString(),
+            },
+          }
+        );
+      }
+
       const tool = getTool(toolName);
       if (!tool) throw new ToolError(ErrorCode.TOOL_NOT_FOUND, 'Tool not found');
 
@@ -192,7 +230,20 @@ export function createToolRoute(
 
       if (validateInput) validateInput(input);
       if (validate) validateToolInput(tool, input);
-      const result = await tool.execute(input);
+
+      // Apply timeout based on tool category
+      const category = tool.category || 'default';
+      const result = await withCategoryTimeout(tool.execute(input), category);
+
+      // Record tool usage stats (in-memory)
+      recordToolUsage(toolName);
+
+      // Record to database if user is logged in (fire-and-forget)
+      getSessionUser(req).then(user => {
+        if (user) {
+          prisma.toolUsageHistory.create({ data: { userId: user.id, toolName } }).catch(() => {});
+        }
+      }).catch(() => {});
 
       if (bufferResponse && result.data && !result.text) {
         return bufferToResponse(
@@ -204,6 +255,12 @@ export function createToolRoute(
 
       return Response.json({ success: true, data: result });
     } catch (error) {
+      captureError({
+        toolName,
+        error: (error as Error).message || 'Unknown error',
+        stack: (error as Error).stack,
+        severity: 'medium',
+      });
       return errorResponse(error as Error);
     }
   };

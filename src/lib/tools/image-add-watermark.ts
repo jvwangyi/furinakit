@@ -6,7 +6,9 @@ import { ToolError, ErrorCode } from '../errors';
 const inputSchema = z.object({
   file: z.instanceof(Buffer),
   text: z.string().min(1),
-  position: z.enum(['center', 'bottom-right', 'bottom-left', 'top-right', 'top-left']).default('bottom-right'),
+  position: z.enum(['center', 'bottom-right', 'bottom-left', 'top-right', 'top-left', 'custom']).default('bottom-right'),
+  x: z.number().min(0).max(100).optional(), // percentage from left (0-100)
+  y: z.number().min(0).max(100).optional(), // percentage from top (0-100)
   opacity: z.number().min(0).max(1).default(0.5),
   fontSize: z.number().int().min(10).max(200).default(48),
   color: z.string().default('#ffffff'),
@@ -18,7 +20,7 @@ const tool: Tool = {
   category: 'image',
   inputSchema,
   execute: async (input): Promise<ToolResult> => {
-    const { file, text, position, opacity, fontSize, color } = inputSchema.parse(input);
+    const { file, text, position, x: customX, y: customY, opacity, fontSize, color } = inputSchema.parse(input);
 
     try {
       const metadata = await sharp(file).metadata();
@@ -30,27 +32,35 @@ const tool: Tool = {
       let y: number;
       const padding = 20;
 
-      switch (position) {
-        case 'center':
-          x = width / 2;
-          y = height / 2;
-          break;
-        case 'bottom-right':
-          x = width - padding;
-          y = height - padding;
-          break;
-        case 'bottom-left':
-          x = padding;
-          y = height - padding;
-          break;
-        case 'top-right':
-          x = width - padding;
-          y = padding + fontSize;
-          break;
-        case 'top-left':
-          x = padding;
-          y = padding + fontSize;
-          break;
+      if (position === 'custom' && customX !== undefined && customY !== undefined) {
+        x = (customX / 100) * width;
+        y = (customY / 100) * height;
+      } else {
+        switch (position) {
+          case 'center':
+            x = width / 2;
+            y = height / 2;
+            break;
+          case 'bottom-right':
+            x = width - padding;
+            y = height - padding;
+            break;
+          case 'bottom-left':
+            x = padding;
+            y = height - padding;
+            break;
+          case 'top-right':
+            x = width - padding;
+            y = padding + fontSize;
+            break;
+          case 'top-left':
+            x = padding;
+            y = padding + fontSize;
+            break;
+          default:
+            x = width - padding;
+            y = height - padding;
+        }
       }
 
       // Create SVG watermark
@@ -68,8 +78,8 @@ const tool: Tool = {
             x="${x}"
             y="${y}"
             class="watermark"
-            text-anchor="${position.includes('right') ? 'end' : position === 'center' ? 'middle' : 'start'}"
-            dominant-baseline="${position.includes('bottom') ? 'auto' : 'hanging'}"
+            text-anchor="${position === 'custom' ? 'middle' : position.includes('right') ? 'end' : position === 'center' ? 'middle' : 'start'}"
+            dominant-baseline="${position === 'custom' ? 'middle' : position.includes('bottom') ? 'auto' : 'hanging'}"
           >${text}</text>
         </svg>
       `;
