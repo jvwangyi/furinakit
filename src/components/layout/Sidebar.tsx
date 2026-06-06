@@ -157,7 +157,7 @@ export function Sidebar() {
           )}>
             <Link
               href="/admin"
-              title={collapsedWidth ? '管理后台' : undefined}
+              title={collapsedWidth ? t('nav.admin') : undefined}
               className={cn(
                 "flex items-center rounded-lg text-sm font-medium transition-all duration-200",
                 collapsedWidth ? 'justify-center p-2.5' : 'gap-3 px-3 py-2',
@@ -167,7 +167,7 @@ export function Sidebar() {
               )}
             >
               <Shield className="h-4 w-4 shrink-0" />
-              {!collapsedWidth && <span className="truncate">管理后台</span>}
+              {!collapsedWidth && <span className="truncate">{t('nav.admin')}</span>}
             </Link>
           </div>
         )}
