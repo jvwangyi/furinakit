@@ -748,6 +748,55 @@ tests/
 
 ---
 
+## 构建产物和生成目录（gitignore）
+
+以下目录由构建工具自动生成，不提交到 git：
+
+```
+.next/                      # Next.js 构建输出
+├── static/                 # 静态资源
+├── server/                 # 服务端渲染
+├── cache/                  # 构建缓存
+└── standalone/             # 独立部署文件
+
+node_modules/               # npm 依赖包
+storybook-static/           # Storybook 构建输出
+test-results/               # Playwright 测试结果
+coverage/                   # 测试覆盖率报告
+tsconfig.tsbuildinfo        # TypeScript 构建缓存
+next-env.d.ts               # Next.js 类型声明
+.codegraph/                 # CodeGraph MCP 索引
+```
+
+| 目录/文件 | 生成方式 | 用途 |
+|-----------|----------|------|
+| `.next/` | `npm run build` | Next.js 编译输出，生产部署需要 |
+| `node_modules/` | `npm install` | 第三方依赖包 |
+| `storybook-static/` | `npm run build-storybook` | Storybook 静态站点 |
+| `test-results/` | `npx playwright test` | E2E 测试结果和截图 |
+| `coverage/` | `npx vitest run --coverage` | 测试覆盖率报告 |
+| `tsconfig.tsbuildinfo` | `npx tsc` | TypeScript 增量编译缓存 |
+| `next-env.d.ts` | `npm run dev` | Next.js 类型声明（自动生成） |
+| `.codegraph/` | CodeGraph MCP | 代码索引数据库 |
+
+### 重建命令
+
+```bash
+# 清理所有构建产物
+rm -rf .next node_modules storybook-static test-results coverage
+
+# 重新安装依赖
+npm install
+
+# 重新构建
+npm run build
+
+# 重新生成 Prisma Client
+npx prisma generate
+```
+
+---
+
 ## `.gitignore` 规则汇总
 
 | 规则 | 说明 |
