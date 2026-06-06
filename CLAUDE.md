@@ -16,19 +16,33 @@ Next.js 16 + TypeScript + Tailwind CSS + Prisma + shadcn/ui + pino（日志）+ 
 | `node check_i18n.cjs` | i18n 完整性检查 |
 
 ## 目录结构
-- `src/app/api/` — API 路由
-- `src/app/[category]/[tool]/` — 工具页面
-- `src/app/dashboard/` — 用户仪表盘
-- `src/app/auth/` — 登录注册页面
-- `src/lib/` — 核心库
-- `src/lib/tools/` — 工具实现
-- `src/lib/locales/` — i18n 翻译文件（zh/en/ja/ko）
-- `src/components/` — UI 组件
-- `src/components/tools/` — 工具相关组件（ToolOptions、ToolPageContainer 等）
-- `prisma/` — 数据库模型
-- `tests/` — 测试
-- `.github/workflows/` — CI/CD（ci.yml、deploy.yml）
-- `nginx/` — Nginx 反向代理配置
+```
+src/
+├── app/
+│   ├── api/                # API 路由
+│   ├── [category]/[tool]/  # 工具页面
+│   ├── api-docs/           # API 文档页面
+│   ├── auth/               # 登录注册页面
+│   └── dashboard/          # 用户仪表盘
+├── components/
+│   ├── layout/             # 布局组件（Sidebar、MobileNav、BackToTop）
+│   ├── providers/          # Context Providers
+│   ├── shared/             # 共享组件
+│   ├── tools/              # 工具相关组件（ToolOptions、ToolPageContainer）
+│   └── ui/                 # shadcn/ui 组件
+├── lib/
+│   ├── hooks/              # 自定义 React Hooks
+│   ├── locales/            # i18n 翻译文件（zh/en/ja/ko）
+│   └── tools/              # 工具实现（87 个）
+├── stories/                # Storybook 组件文档
+└── types/                  # TypeScript 类型定义
+tests/                      # 单元测试
+e2e/                        # E2E 测试（Playwright）
+cli/                        # 命令行工具
+prisma/                     # 数据库模型
+.github/workflows/          # CI/CD（ci.yml、deploy.yml）
+nginx/                      # Nginx 反向代理配置
+```
 
 ## 新增工具流程
 1. 在 `src/lib/tools/` 下创建工具实现（定义 inputSchema + execute）
