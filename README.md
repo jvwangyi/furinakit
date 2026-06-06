@@ -305,21 +305,26 @@ furinakit/
 │   ├── app/                    # Next.js App Router
 │   │   ├── [category]/         # 动态分类路由
 │   │   ├── api/                # API 路由
-│   │   └── api-docs/           # API 文档页面
+│   │   ├── api-docs/           # API 文档页面
+│   │   ├── auth/               # 登录注册页面
+│   │   └── dashboard/          # 用户仪表盘
 │   ├── components/
-│   │   ├── layout/             # 布局组件
+│   │   ├── layout/             # 布局组件（Sidebar、MobileNav）
+│   │   ├── providers/          # Context Providers
 │   │   ├── shared/             # 共享组件
 │   │   ├── tools/              # 工具组件
 │   │   └── ui/                 # UI 组件 (shadcn/ui)
 │   ├── lib/
+│   │   ├── hooks/              # 自定义 React Hooks
 │   │   ├── locales/            # i18n 文件 (zh/en/ja/ko)
-│   │   └── tools/              # 工具实现
+│   │   └── tools/              # 工具实现（87 个）
 │   ├── stories/                # Storybook stories
 │   └── types/                  # TypeScript 类型定义
 ├── tests/                      # 单元测试
 ├── e2e/                        # E2E 测试
 ├── cli/                        # CLI 工具
-└── docs/                       # 项目文档
+├── prisma/                     # 数据库模型
+└── nginx/                      # Nginx 配置
 ```
 
 ### 🛠️ 开发指南
