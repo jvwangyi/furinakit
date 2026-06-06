@@ -21,7 +21,8 @@ import {
   RefreshCw,
   PanelLeftClose,
   PanelLeftOpen,
-  Heart
+  Heart,
+  Shield,
 } from 'lucide-react';
 
 const getCategoryKey = (name: string) => `nav.${name.toLowerCase()}`;
@@ -47,6 +48,7 @@ export function Sidebar() {
   const [fetchError, setFetchError] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('sidebar-collapsed');
@@ -77,6 +79,16 @@ export function Sidebar() {
       .catch(() => {
         setFetchError(true);
       });
+
+    // Check admin status
+    fetch(apiPath('/api/user/me'))
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.role === 'admin') {
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const collapsedWidth = collapsed && mounted;
@@ -136,6 +148,29 @@ export function Sidebar() {
               );
             })}
           </nav>
+
+        {/* Admin link */}
+        {isAdmin && (
+          <div className={cn(
+            "border-t border-sidebar-border",
+            collapsedWidth ? 'px-2 py-2' : 'px-3 py-2'
+          )}>
+            <Link
+              href="/admin"
+              title={collapsedWidth ? '管理后台' : undefined}
+              className={cn(
+                "flex items-center rounded-lg text-sm font-medium transition-all duration-200",
+                collapsedWidth ? 'justify-center p-2.5' : 'gap-3 px-3 py-2',
+                pathname.startsWith('/admin')
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
+                  : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+              )}
+            >
+              <Shield className="h-4 w-4 shrink-0" />
+              {!collapsedWidth && <span className="truncate">管理后台</span>}
+            </Link>
+          </div>
+        )}
 
         {/* Bottom controls */}
         <div className="mt-auto">

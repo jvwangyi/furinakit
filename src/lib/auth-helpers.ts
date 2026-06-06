@@ -6,6 +6,7 @@ export interface SessionUser {
   id: string;
   email: string;
   name: string | null;
+  role: string;
 }
 
 /**
@@ -25,7 +26,7 @@ export async function getSessionUser(request: NextRequest): Promise<SessionUser 
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.sub },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, role: true },
     });
 
     if (!user || !user.email) return null;
@@ -34,6 +35,7 @@ export async function getSessionUser(request: NextRequest): Promise<SessionUser 
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     };
   } catch {
     return null;
