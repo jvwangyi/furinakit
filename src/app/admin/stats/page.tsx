@@ -1,11 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/lib/i18n';
+import { useTheme } from '@/components/ThemeProvider';
 import { withBasePath } from '@/lib/basePath';
 import { BarChart3, Users, Activity, TrendingUp, Star } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+);
 
 interface StatsData {
   overview: {
@@ -22,6 +50,7 @@ interface StatsData {
 
 export default function AdminStatsPage() {
   const { t } = useI18n();
+  const { resolved } = useTheme();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,14 +62,124 @@ export default function AdminStatsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const isDark = resolved === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+  const textColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
+  const primaryColor = isDark ? 'hsl(262, 80%, 65%)' : 'hsl(262, 80%, 50%)';
+  const primaryBg = isDark ? 'hsla(262, 80%, 65%, 0.15)' : 'hsla(262, 80%, 50%, 0.1)';
+
+  // Prepare chart data
+  const dailyChartData = useMemo(() => {
+    if (!data) return null;
+    return {
+      labels: data.dailyTrend.map((d) => d.date.slice(5)),
+      datasets: [
+        {
+          label: t('admin.chart_usage_count'),
+          data: data.dailyTrend.map((d) => d.count),
+          borderColor: primaryColor,
+          backgroundColor: primaryBg,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+          pointHoverRadius: 5,
+          pointBackgroundColor: primaryColor,
+          borderWidth: 2,
+        },
+      ],
+    };
+  }, [data, primaryColor, primaryBg, t]);
+
+  const dailyChartOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' as const },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: isDark ? 'hsl(240, 10%, 15%)' : 'hsl(0, 0%, 100%)',
+          titleColor: isDark ? '#fff' : '#111',
+          bodyColor: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)',
+          borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          borderWidth: 1,
+          padding: 10,
+          cornerRadius: 8,
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor },
+          ticks: { color: textColor, maxRotation: 0, autoSkipPadding: 12, font: { size: 11 } },
+        },
+        y: {
+          grid: { color: gridColor },
+          ticks: { color: textColor, font: { size: 11 } },
+          beginAtZero: true,
+        },
+      },
+    }),
+    [isDark, gridColor, textColor],
+  );
+
+  const barChartData = useMemo(() => {
+    if (!data || data.topTools.length === 0) return null;
+    const colors = data.topTools.map((_, i) =>
+      i === 0 ? primaryColor : isDark ? `hsla(262, 80%, 65%, ${0.85 - i * 0.07})` : `hsla(262, 80%, 50%, ${0.85 - i * 0.07})`,
+    );
+    return {
+      labels: data.topTools.map((t) => t.toolName),
+      datasets: [
+        {
+          label: t('admin.chart_usage_count'),
+          data: data.topTools.map((t) => t.count),
+          backgroundColor: colors,
+          borderRadius: 6,
+          borderSkipped: false,
+        },
+      ],
+    };
+  }, [data, primaryColor, isDark, t]);
+
+  const barChartOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y' as const,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: isDark ? 'hsl(240, 10%, 15%)' : 'hsl(0, 0%, 100%)',
+          titleColor: isDark ? '#fff' : '#111',
+          bodyColor: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)',
+          borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          borderWidth: 1,
+          padding: 10,
+          cornerRadius: 8,
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor },
+          ticks: { color: textColor, font: { size: 11 } },
+          beginAtZero: true,
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: textColor, font: { size: 11 } },
+        },
+      },
+    }),
+    [isDark, gridColor, textColor],
+  );
+
   if (loading) {
     return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   }
 
   if (!data) return null;
 
-  const { overview, topTools, dailyTrend, recentUsers } = data;
-  const maxDaily = Math.max(...dailyTrend.map(d => d.count), 1);
+  const { overview, dailyTrend, recentUsers } = data;
 
   return (
     <div className="space-y-6">
@@ -83,25 +222,20 @@ export default function AdminStatsPage() {
         </Card>
       </div>
 
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top 10 Tools */}
+        {/* Daily Trend Line Chart */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" />{t('admin.hot_tools')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              {t('admin.chart_daily_trend')}
+            </CardTitle>
+          </CardHeader>
           <CardContent>
-            {topTools.length > 0 ? (
-              <div className="space-y-3">
-                {topTools.map((tool, i) => (
-                  <div key={tool.toolName} className="flex items-center gap-3">
-                    <Badge variant={i < 3 ? 'default' : 'secondary'} className="w-6 h-6 flex items-center justify-center p-0">{i + 1}</Badge>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{t(`tool.${tool.toolName}`) || tool.toolName}</div>
-                      <div className="text-xs text-muted-foreground">{tool.count} {t('dashboard.requests')}</div>
-                    </div>
-                    <div className="w-24 bg-muted rounded-full h-2 overflow-hidden">
-                      <div className="bg-primary h-full rounded-full" style={{ width: `${(tool.count / topTools[0].count) * 100}%` }} />
-                    </div>
-                  </div>
-                ))}
+            {dailyChartData && dailyTrend.length > 0 ? (
+              <div className="h-64">
+                <Line data={dailyChartData} options={dailyChartOptions} />
               </div>
             ) : (
               <p className="text-muted-foreground text-sm py-4 text-center">{t('dashboard.no_data')}</p>
@@ -109,27 +243,22 @@ export default function AdminStatsPage() {
           </CardContent>
         </Card>
 
-        {/* Daily Trend */}
+        {/* Top Tools Bar Chart */}
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5" />{t('admin.daily_trend')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              {t('admin.chart_top_tools')}
+            </CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="flex items-end gap-px h-40">
-              {dailyTrend.map((d) => (
-                <div key={d.date} className="flex-1 flex flex-col items-center justify-end h-full group relative">
-                  <div
-                    className="w-full bg-primary/80 rounded-t-sm min-h-[2px] transition-all hover:bg-primary"
-                    style={{ height: `${(d.count / maxDaily) * 100}%` }}
-                  />
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-xs px-1.5 py-0.5 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                    {d.date.slice(5)}: {d.count}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>{dailyTrend[0]?.date.slice(5)}</span>
-              <span>{dailyTrend[dailyTrend.length - 1]?.date.slice(5)}</span>
-            </div>
+            {barChartData && data.topTools.length > 0 ? (
+              <div className="h-64">
+                <Bar data={barChartData} options={barChartOptions} />
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm py-4 text-center">{t('dashboard.no_data')}</p>
+            )}
           </CardContent>
         </Card>
       </div>

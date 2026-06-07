@@ -23,6 +23,10 @@ import {
   PanelLeftOpen,
   Heart,
   Shield,
+  BookOpen,
+  PenLine,
+  MessageSquareText,
+  FolderKanban,
 } from 'lucide-react';
 
 const getCategoryKey = (name: string) => `nav.${name.toLowerCase()}`;
@@ -39,6 +43,13 @@ const categories = [
   { name: 'File', icon: Folder, href: '/file' },
   { name: 'Craft', icon: Palette, href: '/craft' },
   { name: 'Life', icon: Heart, href: '/life' },
+];
+
+const academicItems = [
+  { name: 'Literature', icon: BookOpen, href: '/academic/literature' },
+  { name: 'Writing', icon: PenLine, href: '/academic/writing' },
+  { name: 'Review', icon: MessageSquareText, href: '/academic/review' },
+  { name: 'Projects', icon: FolderKanban, href: '/academic/projects' },
 ];
 
 export function Sidebar() {
@@ -122,6 +133,12 @@ export function Sidebar() {
             "flex-1 overflow-y-auto py-4",
             collapsedWidth ? 'px-2 space-y-1' : 'px-3 space-y-1'
           )}>
+            {/* Tools section */}
+            {!collapsedWidth && (
+              <p className="px-3 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+                {t('nav.tools_section')}
+              </p>
+            )}
             {categories.map((category) => {
               const Icon = category.icon;
               const isActive = pathname === category.href ||
@@ -143,6 +160,42 @@ export function Sidebar() {
                   <Icon className="h-4 w-4 shrink-0" />
                   {!collapsedWidth && (
                     <span className="truncate">{t(getCategoryKey(category.name))}</span>
+                  )}
+                </Link>
+              );
+            })}
+
+            {/* Academic section divider */}
+            <div className={cn(
+              "border-t border-sidebar-border my-3",
+              collapsedWidth ? 'mx-1' : 'mx-2'
+            )} />
+            {!collapsedWidth && (
+              <p className="px-3 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+                {t('nav.academic_section')}
+              </p>
+            )}
+            {academicItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href ||
+                pathname.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  title={collapsedWidth ? t(`nav.${item.name.toLowerCase()}`) : undefined}
+                  className={cn(
+                    "flex items-center rounded-lg text-sm font-medium transition-all duration-200",
+                    collapsedWidth ? 'justify-center p-2.5' : 'gap-3 px-3 py-2',
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                      : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {!collapsedWidth && (
+                    <span className="truncate">{t(`nav.${item.name.toLowerCase()}`)}</span>
                   )}
                 </Link>
               );
