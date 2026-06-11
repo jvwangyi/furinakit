@@ -27,6 +27,10 @@ import {
   PenLine,
   MessageSquareText,
   FolderKanban,
+  ChevronDown,
+  Settings,
+  Lightbulb,
+  Key,
 } from 'lucide-react';
 
 const getCategoryKey = (name: string) => `nav.${name.toLowerCase()}`;
@@ -46,10 +50,12 @@ const categories = [
 ];
 
 const academicItems = [
+  { name: 'Brainstorm', icon: Lightbulb, href: '/academic/brainstorm' },
   { name: 'Literature', icon: BookOpen, href: '/academic/literature' },
   { name: 'Writing', icon: PenLine, href: '/academic/writing' },
   { name: 'Review', icon: MessageSquareText, href: '/academic/review' },
   { name: 'Projects', icon: FolderKanban, href: '/academic/projects' },
+  { name: 'ApiKey', icon: Key, href: '/academic/settings' },
 ];
 
 export function Sidebar() {
@@ -60,6 +66,8 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(true);
+  const [academicOpen, setAcademicOpen] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem('sidebar-collapsed');
@@ -130,16 +138,46 @@ export function Sidebar() {
 
         {/* Navigation */}
           <nav className={cn(
-            "flex-1 overflow-y-auto py-4",
-            collapsedWidth ? 'px-2 space-y-1' : 'px-3 space-y-1'
+            "flex-1 overflow-y-auto overscroll-contain py-3 sidebar-scroll",
+            collapsedWidth ? 'px-2 space-y-1' : 'px-3 space-y-0.5'
           )}>
+            {/* Home button - always at top */}
+            <Link
+              href="/"
+              title={collapsedWidth ? t('nav.all') : undefined}
+              className={cn(
+                "flex items-center rounded-lg text-sm font-medium transition-all duration-200 mb-2",
+                collapsedWidth ? 'justify-center p-2.5' : 'gap-3 px-3 py-2',
+                pathname === '/'
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              )}
+            >
+              <Home className="h-4 w-4 shrink-0" />
+              {!collapsedWidth && <span className="truncate">{t('nav.all')}</span>}
+            </Link>
+
             {/* Tools section */}
-            {!collapsedWidth && (
-              <p className="px-3 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
-                {t('nav.tools_section')}
-              </p>
-            )}
-            {categories.map((category) => {
+            <button
+              onClick={() => setToolsOpen(prev => !prev)}
+              className={cn(
+                "flex items-center w-full rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200",
+                collapsedWidth ? 'justify-center p-2' : 'px-3 py-2',
+                "text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent/30"
+              )}
+              title={collapsedWidth ? t('nav.tools_section') : undefined}
+            >
+              {!collapsedWidth && (
+                <>
+                  <span className="flex-1 text-left">{t('nav.tools_section')}</span>
+                  <ChevronDown className={cn(
+                    "h-3.5 w-3.5 transition-transform duration-200",
+                    toolsOpen && "rotate-180"
+                  )} />
+                </>
+              )}
+            </button>
+            {(toolsOpen || collapsedWidth) && categories.filter(c => c.name !== 'All').map((category) => {
               const Icon = category.icon;
               const isActive = pathname === category.href ||
                 (category.href !== '/' && pathname.startsWith(category.href));
@@ -151,7 +189,7 @@ export function Sidebar() {
                   title={collapsedWidth ? t(getCategoryKey(category.name)) : undefined}
                   className={cn(
                     "flex items-center rounded-lg text-sm font-medium transition-all duration-200",
-                    collapsedWidth ? 'justify-center p-2.5' : 'gap-3 px-3 py-2',
+                    collapsedWidth ? 'justify-center p-2.5' : 'gap-3 px-3 py-1.5',
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
                       : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -165,17 +203,31 @@ export function Sidebar() {
               );
             })}
 
-            {/* Academic section divider */}
+            {/* Academic section */}
             <div className={cn(
-              "border-t border-sidebar-border my-3",
+              "border-t border-sidebar-border my-2",
               collapsedWidth ? 'mx-1' : 'mx-2'
             )} />
-            {!collapsedWidth && (
-              <p className="px-3 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
-                {t('nav.academic_section')}
-              </p>
-            )}
-            {academicItems.map((item) => {
+            <button
+              onClick={() => setAcademicOpen(prev => !prev)}
+              className={cn(
+                "flex items-center w-full rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200",
+                collapsedWidth ? 'justify-center p-2' : 'px-3 py-2',
+                "text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent/30"
+              )}
+              title={collapsedWidth ? t('nav.academic_section') : undefined}
+            >
+              {!collapsedWidth && (
+                <>
+                  <span className="flex-1 text-left">{t('nav.academic_section')}</span>
+                  <ChevronDown className={cn(
+                    "h-3.5 w-3.5 transition-transform duration-200",
+                    academicOpen && "rotate-180"
+                  )} />
+                </>
+              )}
+            </button>
+            {(academicOpen || collapsedWidth) && academicItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href ||
                 pathname.startsWith(item.href);
@@ -187,7 +239,7 @@ export function Sidebar() {
                   title={collapsedWidth ? t(`nav.${item.name.toLowerCase()}`) : undefined}
                   className={cn(
                     "flex items-center rounded-lg text-sm font-medium transition-all duration-200",
-                    collapsedWidth ? 'justify-center p-2.5' : 'gap-3 px-3 py-2',
+                    collapsedWidth ? 'justify-center p-2.5' : 'gap-3 px-3 py-1.5',
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
                       : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"

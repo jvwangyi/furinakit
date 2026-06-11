@@ -94,7 +94,7 @@ export function PomodoroClient() {
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="mx-auto space-y-6">
       {/* Timer Display */}
       <Card className="bg-card border-border/50">
         <CardHeader className="text-center pb-2">

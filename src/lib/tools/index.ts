@@ -86,5 +86,8 @@ import './image-add-text';
 import './pomodoro';
 import './business-card';
 
+// Initialize queue executor (bridges task queue with tool registry)
+import '../queue-executor';
+
 // Re-export registry functions
 export { getAllTools, getTool, getToolsByCategory } from '../registry';

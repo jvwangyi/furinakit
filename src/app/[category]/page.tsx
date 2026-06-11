@@ -40,7 +40,7 @@ export default function CategoryPage() {
 
   return (
     <div className="min-h-screen animate-fade-in">
-      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 mx-auto">
         <h1 className="text-2xl font-bold mb-2">{t(categoryKeys[category]) || category}</h1>
         <p className="text-muted-foreground mb-6">{filteredTools.length} {t('tools.count')}</p>
 

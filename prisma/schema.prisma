@@ -23,6 +23,8 @@ model User {
   sessions Session[]
   history  ToolUsageHistory[]
   favorites Favorite[]
+  academicProjects AcademicProject[]
+  llmConfigs       LLMConfig[]
 }
 
 model Account {
@@ -83,4 +85,87 @@ model Favorite {
 
   @@unique([userId, toolName])
   @@index([userId])
+}
+
+model AcademicProject {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  topic       String?
+  stage       String   @default("brainstorm")
+  stageData   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  papers   AcademicPaper[]
+  reviews  AcademicReview[]
+  drafts   AcademicDraft[]
+
+  @@index([userId])
+}
+
+model AcademicPaper {
+  id           String  @id @default(cuid())
+  projectId    String
+  title        String
+  authors      String?
+  year         Int?
+  abstract     String?
+  url          String?
+  doi          String?
+  citationKey  String?
+  addedAt      DateTime @default(now())
+
+  project AcademicProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model AcademicReview {
+  id        String   @id @default(cuid())
+  projectId String
+  stage     String   @default("literature_review")
+  type      String   // "literature_review" | "peer_review" | "integrity_check" | "revision"
+  content   String   // Markdown content
+  config    String?  // JSON: { style, language, llm provider }
+  score     Float?   // Review score (peer_review only)
+  verdict   String?  // Accept / Minor Revision / Major Revision / Reject
+  createdAt DateTime @default(now())
+
+  project AcademicProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model AcademicDraft {
+  id        String   @id @default(cuid())
+  projectId String
+  title     String
+  content   String   // Markdown content
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+
+  project AcademicProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model LLMConfig {
+  id        String   @id @default(cuid())
+  userId    String
+  provider  String   // claude | openai | deepseek | mimo
+  name      String   @default("Key 1")  // user-defined name for this key
+  apiKey    String   // encrypted storage
+  model     String?
+  baseUrl   String?  // custom base URL override (e.g. Token Plan endpoint)
+  saveMode  String   @default("session") // session | persistent
+  isActive  Boolean  @default(true)       // whether this key is active
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, provider])
 }

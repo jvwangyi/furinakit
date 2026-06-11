@@ -1,50 +1,61 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ToolCard } from '@/components/tools/ToolCard';
 import { RecentTools } from '@/components/tools/RecentTools';
 import { FavoritesSection } from '@/components/tools/FavoritesSection';
-import { Search } from 'lucide-react';
+import {
+  Wrench,
+  GraduationCap,
+  BookOpen,
+  PenLine,
+  MessageSquareText,
+  FolderKanban,
+  ArrowRight,
+  FileText,
+  Image,
+  Type,
+  Film,
+  Volume2,
+  Code,
+  Sparkles,
+} from 'lucide-react';
 import { AuthButton } from '@/components/AuthButton';
 import { apiPath } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
-import { categoryKeys } from '@/lib/constants';
 import { withBasePath } from '@/lib/basePath';
 import { useFavorites } from '@/lib/hooks/useFavorites';
 import type { ToolInfo } from '@/types/tool';
 
+const quickTools = [
+  { name: 'pdf-merge', icon: FileText, href: '/pdf/pdf-merge' },
+  { name: 'image-compress', icon: Image, href: '/image/image-compress' },
+  { name: 'json-format', icon: Type, href: '/text/json-format' },
+  { name: 'video-compress', icon: Film, href: '/video/video-compress' },
+  { name: 'audio-convert', icon: Volume2, href: '/audio/audio-convert' },
+  { name: 'qrcode-gen', icon: Code, href: '/dev/qrcode-gen' },
+];
+
+const academicFeatures = [
+  { key: 'literature', icon: BookOpen, href: '/academic/literature' },
+  { key: 'writing', icon: PenLine, href: '/academic/writing' },
+  { key: 'review', icon: MessageSquareText, href: '/academic/review' },
+  { key: 'projects', icon: FolderKanban, href: '/academic/projects' },
+];
+
+const getToolName = (name: string, t: (key: string) => string) => {
+  const translated = t(`tool.${name}`);
+  return translated === `tool.${name}` ? name : translated;
+};
+
 export default function HomePage() {
   const { t } = useI18n();
   const [tools, setTools] = useState<ToolInfo[]>([]);
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const [toolCount, setToolCount] = useState<number>(0);
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
-
-  // Global keyboard shortcuts for search
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      // `/` to focus search (when not in an input/textarea)
-      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-      // Ctrl+K or Cmd+K to focus search
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-      // ESC to blur search
-      if (e.key === 'Escape' && document.activeElement === searchRef.current) {
-        searchRef.current?.blur();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
 
   useEffect(() => {
     fetch(apiPath('/api/tools'))
@@ -52,35 +63,16 @@ export default function HomePage() {
       .then(data => {
         if (data.success) {
           setTools(data.data);
+          setToolCount(data.data.length);
         }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const filteredTools = tools.filter(tool => {
-    const matchesSearch = !search ||
-      tool.name.toLowerCase().includes(search.toLowerCase()) ||
-      tool.description.toLowerCase().includes(search.toLowerCase());
-
-    const matchesCategory = !selectedCategory || tool.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
-  }).sort((a, b) => {
-    if (!selectedCategory) {
-      const catOrder = ['pdf', 'image', 'text', 'dev', 'convert', 'audio', 'video', 'file', 'craft'];
-      const aIdx = catOrder.indexOf(a.category);
-      const bIdx = catOrder.indexOf(b.category);
-      if (aIdx !== bIdx) return aIdx - bIdx;
-    }
-    return a.name.localeCompare(b.name);
-  });
-
-  const categories = Array.from(new Set(tools.map(t => t.category)));
-
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero */}
       <div className="relative overflow-hidden border-b border-border/50">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         <div className="relative p-4 sm:p-6 lg:p-8 pb-6">
@@ -94,83 +86,129 @@ export default function HomePage() {
             </div>
             <AuthButton />
           </div>
-          <p className="text-muted-foreground max-w-2xl mt-2 text-sm sm:text-base">
-            {t('site.description')}
-          </p>
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 lg:p-8">
-        {/* Recent Tools */}
+      <div className="p-4 sm:p-6 lg:p-8 space-y-8">
+
+        {/* ===== Module Cards ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-auto">
+          {/* Tools */}
+          <Link href="/tools" className="group">
+            <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/30 hover:-translate-y-0.5 cursor-pointer h-full">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+              <CardHeader className="relative pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
+                      <Wrench className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{t('nav.tools_section')}</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-0.5">{toolCount} {t('sidebar.tools_available')}</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative">
+                <CardDescription className="text-sm mb-4">{t('site.description')}</CardDescription>
+                <div className="flex flex-wrap gap-2">
+                  {quickTools.slice(0, 4).map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={item.name} className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 rounded-md px-2 py-1">
+                        <Icon className="h-3 w-3" />
+                        <span>{getToolName(item.name, t)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Academic */}
+          <Link href="/academic" className="group">
+            <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/30 hover:-translate-y-0.5 cursor-pointer h-full">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+              <CardHeader className="relative pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent group-hover:bg-accent/20 transition-colors">
+                      <GraduationCap className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{t('nav.academic_section')}</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t('academic.home.description')}</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative">
+                <CardDescription className="text-sm mb-4">{t('academic.literature.description')}</CardDescription>
+                <div className="flex flex-wrap gap-2">
+                  {academicFeatures.map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={item.key} className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 rounded-md px-2 py-1">
+                        <Icon className="h-3 w-3" />
+                        <span>{t(`nav.${item.key}`)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
+        {/* ===== Quick Tools ===== */}
+        <div className="mx-auto">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            {t('tools.popular') || 'Quick Tools'}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            {quickTools.map(item => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.name} href={item.href} className="group">
+                  <div className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-md transition-all duration-200">
+                    <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <span className="text-xs font-medium text-center">{getToolName(item.name, t)}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ===== Academic Features ===== */}
+        <div className="mx-auto">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+            <GraduationCap className="h-4 w-4" />
+            {t('nav.academic_section')}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            {academicFeatures.map(item => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.key} href={item.href} className="group">
+                  <div className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-md transition-all duration-200">
+                    <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <span className="text-xs font-medium text-center">{t(`nav.${item.key}`)}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ===== Recent & Favorites ===== */}
         <RecentTools />
-
-        {/* Favorites */}
-        <FavoritesSection
-          favorites={favorites}
-          tools={tools}
-          onRemove={toggleFavorite}
-        />
-
-
-        {/* Search & Filter */}
-        <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              ref={searchRef}
-              placeholder={t('search.placeholder.shortcut')}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-card border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-colors"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Badge
-            variant={selectedCategory === null ? "default" : "outline"}
-            className="cursor-pointer transition-all duration-200 hover:scale-105"
-            onClick={() => setSelectedCategory(null)}
-          >
-            {t('nav.all')}
-          </Badge>
-          {categories.map(category => (
-            <Badge
-              key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
-              className="cursor-pointer transition-all duration-200 hover:scale-105"
-              onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
-            >
-              {t(categoryKeys[category]) || category}
-            </Badge>
-          ))}
-        </div>
-
-        {/* Tools Grid */}
-        {loading ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
-            <p>{t('tools.loading')}</p>
-          </div>
-        ) : filteredTools.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <p className="text-lg mb-1">{t('tools.empty')}</p>
-            <p className="text-sm">{t('tools.empty.desc')}</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in">
-            {filteredTools.map(tool => (
-              <ToolCard
-                key={tool.name}
-                name={tool.name}
-                description={tool.description}
-                category={tool.category}
-                isFavorite={isFavorite(tool.name)}
-                onToggleFavorite={toggleFavorite}
-              />
-            ))}
-          </div>
-        )}
+        <FavoritesSection favorites={favorites} tools={tools} onRemove={toggleFavorite} />
       </div>
     </div>
   );

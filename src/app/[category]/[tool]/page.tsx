@@ -37,7 +37,7 @@ export default function ToolPage() {
   // Tools with their own client components
   if (toolName === 'perler-beads') {
     return (
-      <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 mx-auto">
         <PerlerBeadsClient />
       </div>
     );
@@ -45,7 +45,7 @@ export default function ToolPage() {
 
   if (toolName === 'pomodoro') {
     return (
-      <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 mx-auto">
         <PomodoroClient />
       </div>
     );
@@ -53,7 +53,7 @@ export default function ToolPage() {
 
   if (toolName === 'business-card') {
     return (
-      <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 mx-auto">
         <BusinessCardClient />
       </div>
     );

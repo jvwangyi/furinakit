@@ -57,6 +57,73 @@ prisma/               # 数据库模型
 - 所有用户可见文字用 `t('key')` 国际化
 - Select 组件必须设置默认值
 
+## i18n 规范（必须遵守）
+
+所有用户可见文字必须用 `t('key')` 国际化，**禁止硬编码中文/英文**。
+
+### ⚠️ 核心规则：新增 key 必须同步 4 个 locale 文件
+
+1. 在组件中使用 `t('category.new_key')`
+2. **立即**在 4 个 locale 文件中添加对应翻译（不是"稍后补"）：
+   - `src/lib/locales/zh.json` — 中文
+   - `src/lib/locales/en.json` — English
+   - `src/lib/locales/ja.json` — 日本語
+   - `src/lib/locales/ko.json` — 한국어
+3. 运行 `node scripts/check_i18n.cjs` 验证完整性
+4. 运行 `npx tsc --noEmit` 确认无编译错误
+
+**如果跳过第 2 步，用户界面上会直接显示原始 key 文本（如 `academic.settings.persistent`），这是最常见的用户体验 bug。**
+
+### 命名规范
+
+| 模块 | 格式 | 示例 |
+|------|------|------|
+| 学术 | `academic.{模块}.{key}` | `academic.settings.title` |
+| 导航 | `nav.{key}` | `nav.settings` |
+| 按钮 | `btn.{key}` | `btn.cancel` |
+| 通用 | `common.{key}` | `common.show` |
+
+### JSON 文件格式
+
+- 不要有 UTF-8 BOM
+- 最后一个 key 后面不要加逗号
+- 用 2 空格缩进
+- 避免重复 key（JSON 解析器取最后一个值，静默丢失前面的）
+
+## i18n 规范（必须遵守）
+
+所有用户可见文字必须用 `t('key')` 国际化，**禁止硬编码中文/英文**。
+
+### 新增 i18n key 流程
+
+1. 在组件中使用 `t('category.new_key')`
+2. **立即**在 4 个 locale 文件中添加对应翻译：
+   - `src/lib/locales/zh.json` — 中文
+   - `src/lib/locales/en.json` — English
+   - `src/lib/locales/ja.json` — 日本語
+   - `src/lib/locales/ko.json` — 한국어
+3. 运行 `node scripts/check_i18n.cjs` 验证完整性
+4. 运行 `npx tsc --noEmit` 确认无编译错误
+
+### 命名规范
+
+- 学术模块：`academic.{模块}.{key}`
+- 导航：`nav.{key}`
+- 按钮：`btn.{key}`
+- 通用：`common.{key}`
+
+### ⚠️ 常见错误
+
+- ❌ 在组件里用了 `t('academic.settings.persistent')` 但没在 locale 文件里加翻译
+- ❌ 只加了中文没加其他 3 种语言
+- ❌ 用了 `t('common.cancel')` 但实际 key 是 `btn.cancel`
+
+### JSON 文件格式
+
+- 不要有 UTF-8 BOM
+- 最后一个 key 后面不要加逗号
+- 用 2 空格缩进
+
 ## 安全要点
 - 文件上传校验类型和大小
 - 密码 bcrypt（cost 12），8 位 + 字母数字
